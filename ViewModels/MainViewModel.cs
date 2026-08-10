@@ -1,5 +1,7 @@
+using System;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PasswordManager.Models;
 using PasswordManager.Services;
 
 namespace PasswordManager.ViewModels;
@@ -11,12 +13,17 @@ namespace PasswordManager.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly SessionManager _session = new(new VaultService());
+    private readonly SettingsService _settingsService = new();
+    private readonly AppSettings _settings;
 
     [ObservableProperty]
     public partial ViewModelBase CurrentView { get; set; }
 
     public MainViewModel()
     {
+        _settings = _settingsService.Load();
+        _session.AutoLockTimeout = TimeSpan.FromMinutes(_settings.AutoLockMinutes);
+
         _session.Locked += OnLocked;
         // Inactivity timeout fires off the UI thread; marshal the actual lock onto it.
         _session.AutoLockRequested += () => Dispatcher.UIThread.Post(_session.Lock);
@@ -36,7 +43,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void OnUnlocked()
     {
-        CurrentView = new VaultViewModel(_session);
+        CurrentView = new VaultViewModel(_session, _settingsService, _settings);
     }
 
     private void OnLocked()

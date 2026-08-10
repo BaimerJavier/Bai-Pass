@@ -21,6 +21,8 @@ public partial class VaultViewModel : ViewModelBase
     public const string UngroupedName = "Sin carpeta";
 
     private readonly SessionManager _session;
+    private readonly SettingsService _settingsService;
+    private readonly Models.AppSettings _settings;
     private readonly IList<PasswordEntry> _all;
 
     // Remembers each folder's expanded/collapsed state across list rebuilds.
@@ -28,6 +30,11 @@ public partial class VaultViewModel : ViewModelBase
 
     /// <summary>Folders shown in the sidebar (collapsible groups of entries).</summary>
     public ObservableCollection<FolderGroup> Groups { get; } = new();
+
+    /// <summary>Auto-lock timeout options offered in the UI (minutes).</summary>
+    public int[] AutoLockOptions { get; } = { 1, 5, 10, 15, 30 };
+
+    [ObservableProperty] public partial int SelectedAutoLockMinutes { get; set; }
 
     /// <summary>Distinct folder names, for the "Carpeta" autocomplete in the detail panel.</summary>
     public ObservableCollection<string> FolderNames { get; } = new();
@@ -50,11 +57,23 @@ public partial class VaultViewModel : ViewModelBase
     public bool HasSelection => SelectedEntry is not null;
     public int EntryCount => _all.Count;
 
-    public VaultViewModel(SessionManager session)
+    public VaultViewModel(SessionManager session, SettingsService settingsService, Models.AppSettings settings)
     {
         _session = session;
+        _settingsService = settingsService;
+        _settings = settings;
         _all = _session.Entries;
+        SelectedAutoLockMinutes = settings.AutoLockMinutes;
         RefreshGroups();
+    }
+
+    partial void OnSelectedAutoLockMinutesChanged(int value)
+    {
+        if (value <= 0) return;
+        _session.AutoLockTimeout = TimeSpan.FromMinutes(value);
+        _session.RegisterActivity();
+        _settings.AutoLockMinutes = value;
+        _settingsService.Save(_settings);
     }
 
     partial void OnSearchTextChanged(string value)
