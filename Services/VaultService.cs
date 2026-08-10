@@ -48,14 +48,14 @@ public class VaultService
 
     public bool VaultExists() => _storage.Exists;
 
-    /// <summary>Reads the salt stored in the vault header (needed to derive the key at unlock).</summary>
-    public byte[] ReadSalt() => CryptoService.ReadSalt(_storage.Read());
+    /// <summary>Reads the vault's format/KDF descriptor (needed to derive the key at unlock).</summary>
+    public VaultFormat ReadFormat() => CryptoService.ReadFormat(_storage.Read());
 
     /// <summary>Decrypts and deserializes the entries using an already-derived key.</summary>
     public List<PasswordEntry> LoadWithKey(ReadOnlySpan<byte> key)
     {
         byte[] file = _storage.Read();
-        byte[] json = CryptoService.DecryptWithKey(file, key);
+        byte[] json = CryptoService.Decrypt(file, key);
         try
         {
             string text = Encoding.UTF8.GetString(json);
@@ -74,14 +74,14 @@ public class VaultService
     /// Serializes, encrypts with the given key+salt, and writes crash-safely: the temp file is
     /// verified to decrypt back before it atomically replaces the vault (old one kept as backup).
     /// </summary>
-    public void SaveWithKey(IEnumerable<PasswordEntry> entries, ReadOnlySpan<byte> key, byte[] salt)
+    public void SaveWithKey(IEnumerable<PasswordEntry> entries, ReadOnlySpan<byte> key, VaultFormat fmt)
     {
         string text = JsonSerializer.Serialize(entries, JsonOptions);
         byte[] plaintext = Encoding.UTF8.GetBytes(text);
         byte[] file;
         try
         {
-            file = CryptoService.EncryptWithKey(plaintext, key, salt);
+            file = CryptoService.Encrypt(plaintext, key, fmt);
         }
         finally
         {
@@ -96,7 +96,7 @@ public class VaultService
             {
                 try
                 {
-                    byte[] rt = CryptoService.DecryptWithKey(candidate, keyCopy);
+                    byte[] rt = CryptoService.Decrypt(candidate, keyCopy);
                     CryptographicOperations.ZeroMemory(rt);
                     return true;
                 }
@@ -113,17 +113,17 @@ public class VaultService
 
     public List<PasswordEntry> Load(string masterPassword)
     {
-        byte[] salt = ReadSalt();
-        byte[] key = CryptoService.DeriveKey(masterPassword, salt);
+        VaultFormat fmt = ReadFormat();
+        byte[] key = CryptoService.DeriveKey(masterPassword, fmt);
         try { return LoadWithKey(key); }
         finally { CryptographicOperations.ZeroMemory(key); }
     }
 
     public void Save(IEnumerable<PasswordEntry> entries, string masterPassword)
     {
-        byte[] salt = VaultExists() ? ReadSalt() : CryptoService.GenerateSalt();
-        byte[] key = CryptoService.DeriveKey(masterPassword, salt);
-        try { SaveWithKey(entries, key, salt); }
+        VaultFormat fmt = VaultExists() ? ReadFormat() : CryptoService.NewDefaultFormat();
+        byte[] key = CryptoService.DeriveKey(masterPassword, fmt);
+        try { SaveWithKey(entries, key, fmt); }
         finally { CryptographicOperations.ZeroMemory(key); }
     }
 }

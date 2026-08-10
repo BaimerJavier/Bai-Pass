@@ -21,8 +21,11 @@ public sealed class SessionManager : ISessionManager, IDisposable
     private readonly object _gate = new();
 
     private SecureSessionKey? _key;
-    private byte[]? _salt;
+    private VaultFormat? _format;
     private List<PasswordEntry> _entries = new();
+
+    /// <summary>True when the last unlock upgraded a legacy PMV1 vault to PMV2 (Argon2id).</summary>
+    public bool MigratedOnUnlock { get; private set; }
 
     private readonly Timer _idleTimer;
     private long _lastActivityTicks;
@@ -46,16 +49,18 @@ public sealed class SessionManager : ISessionManager, IDisposable
 
     public void CreateNew(string masterPassword)
     {
-        byte[] salt = CryptoService.GenerateSalt();
-        byte[] key = CryptoService.DeriveKey(masterPassword, salt);
-        _vault.SaveWithKey(new List<PasswordEntry>(), key, salt);
-        BeginSession(key, salt, new List<PasswordEntry>());
+        MigratedOnUnlock = false;
+        VaultFormat fmt = CryptoService.NewDefaultFormat();
+        byte[] key = CryptoService.DeriveKey(masterPassword, fmt);
+        _vault.SaveWithKey(new List<PasswordEntry>(), key, fmt);
+        BeginSession(key, fmt, new List<PasswordEntry>());
     }
 
     public void Unlock(string masterPassword)
     {
-        byte[] salt = _vault.ReadSalt();
-        byte[] key = CryptoService.DeriveKey(masterPassword, salt);
+        MigratedOnUnlock = false;
+        VaultFormat fmt = _vault.ReadFormat();
+        byte[] key = CryptoService.DeriveKey(masterPassword, fmt);
         List<PasswordEntry> entries;
         try
         {
@@ -66,13 +71,34 @@ public sealed class SessionManager : ISessionManager, IDisposable
             CryptographicOperations.ZeroMemory(key);
             throw;
         }
-        BeginSession(key, salt, entries);
+
+        // Seamlessly upgrade legacy PMV1 (PBKDF2) vaults to PMV2 (Argon2id). The write is
+        // verified and keeps a backup, so a failure leaves the original PMV1 vault intact.
+        if (fmt.IsLegacy)
+        {
+            try
+            {
+                VaultFormat newFmt = CryptoService.NewDefaultFormat();
+                byte[] newKey = CryptoService.DeriveKey(masterPassword, newFmt);
+                _vault.SaveWithKey(entries, newKey, newFmt);
+                CryptographicOperations.ZeroMemory(key);
+                key = newKey;
+                fmt = newFmt;
+                MigratedOnUnlock = true;
+            }
+            catch
+            {
+                // Keep the working PMV1 session; migration can retry on the next save.
+            }
+        }
+
+        BeginSession(key, fmt, entries);
     }
 
-    private void BeginSession(byte[] key, byte[] salt, List<PasswordEntry> entries)
+    private void BeginSession(byte[] key, VaultFormat fmt, List<PasswordEntry> entries)
     {
         _key = new SecureSessionKey(key);
-        _salt = salt;
+        _format = fmt;
         _entries = entries;
         _autoLockRaised = false;
         RegisterActivity();
@@ -85,9 +111,9 @@ public sealed class SessionManager : ISessionManager, IDisposable
     {
         lock (_gate)
         {
-            if (_key is null || _key.IsDisposed || _salt is null)
+            if (_key is null || _key.IsDisposed || _format is null)
                 throw new InvalidOperationException("La sesion esta bloqueada.");
-            _vault.SaveWithKey(_entries, _key.Key, _salt);
+            _vault.SaveWithKey(_entries, _key.Key, _format);
         }
     }
 
@@ -116,12 +142,7 @@ public sealed class SessionManager : ISessionManager, IDisposable
 
             _key?.Dispose();               // zeroizes the 256-bit key
             _key = null;
-
-            if (_salt is not null)
-            {
-                CryptographicOperations.ZeroMemory(_salt);
-                _salt = null;
-            }
+            _format = null;                // salt is not secret, but drop the reference
 
             _entries.Clear();              // drop references to decrypted entries
             _entries = new List<PasswordEntry>();
@@ -134,6 +155,5 @@ public sealed class SessionManager : ISessionManager, IDisposable
     {
         _idleTimer.Dispose();
         _key?.Dispose();
-        if (_salt is not null) CryptographicOperations.ZeroMemory(_salt);
     }
 }
