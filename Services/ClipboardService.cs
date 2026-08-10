@@ -17,6 +17,14 @@ public static class ClipboardService
 
     public static void Init(IClipboard clipboard) => _clipboard = clipboard;
 
+    /// <summary>Immediately clears the clipboard and cancels any pending auto-clear (used on lock).</summary>
+    public static void ClearNow()
+    {
+        _clearCts?.Cancel();
+        if (_clipboard is null) return;
+        Dispatcher.UIThread.Post(() => _clipboard.ClearAsync());
+    }
+
     /// <summary>Copies text and schedules the clipboard to be cleared after some seconds.</summary>
     public static async Task CopyAsync(string text, int clearAfterSeconds = 25)
     {

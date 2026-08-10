@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PasswordManager.Models;
@@ -13,29 +12,19 @@ namespace PasswordManager.ViewModels;
 
 /// <summary>
 /// Main screen once unlocked: entries grouped into collapsible folders plus an editable
-/// detail panel. Every change is encrypted and written to disk immediately. The session
-/// auto-locks after a fixed timeout for security.
+/// detail panel. Every change is encrypted and written to disk immediately. Session
+/// lifecycle (key, auto-lock, teardown) is owned by the <see cref="SessionManager"/>.
 /// </summary>
 public partial class VaultViewModel : ViewModelBase
 {
     /// <summary>Label used for entries that have no folder assigned.</summary>
     public const string UngroupedName = "Sin carpeta";
 
-    /// <summary>Auto-lock the session after this much time since unlocking.</summary>
-    private static readonly TimeSpan SessionTimeout = TimeSpan.FromHours(8);
-
-    private readonly VaultService _vault;
-    private readonly string _masterPassword;
-    private readonly List<PasswordEntry> _all;
-
-    private readonly DateTime _unlockedAt = DateTime.Now;
-    private readonly DispatcherTimer _sessionTimer;
+    private readonly SessionManager _session;
+    private readonly IList<PasswordEntry> _all;
 
     // Remembers each folder's expanded/collapsed state across list rebuilds.
     private readonly Dictionary<string, bool> _expandState = new();
-
-    /// <summary>Raised when the user locks the vault, so the shell returns to the unlock screen.</summary>
-    public event Action? Locked;
 
     /// <summary>Folders shown in the sidebar (collapsible groups of entries).</summary>
     public ObservableCollection<FolderGroup> Groups { get; } = new();
@@ -61,26 +50,18 @@ public partial class VaultViewModel : ViewModelBase
     public bool HasSelection => SelectedEntry is not null;
     public int EntryCount => _all.Count;
 
-    public VaultViewModel(VaultService vault, string masterPassword)
+    public VaultViewModel(SessionManager session)
     {
-        _vault = vault;
-        _masterPassword = masterPassword;
-        _all = _vault.Load(masterPassword);
-
-        // Check every minute whether the 8-hour session has expired (survives sleep,
-        // since it compares wall-clock time rather than relying on a single long tick).
-        _sessionTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
-        _sessionTimer.Tick += (_, _) =>
-        {
-            if (DateTime.Now - _unlockedAt >= SessionTimeout)
-                AutoLock();
-        };
-        _sessionTimer.Start();
-
+        _session = session;
+        _all = _session.Entries;
         RefreshGroups();
     }
 
-    partial void OnSearchTextChanged(string value) => RefreshGroups();
+    partial void OnSearchTextChanged(string value)
+    {
+        _session.RegisterActivity();
+        RefreshGroups();
+    }
 
     partial void OnSelectedEntryChanged(PasswordEntry? value)
     {
@@ -92,6 +73,7 @@ public partial class VaultViewModel : ViewModelBase
     [RelayCommand]
     private void SelectEntry(PasswordEntry? entry)
     {
+        _session.RegisterActivity();
         foreach (var e in _all)
             e.IsSelected = ReferenceEquals(e, entry);
         SelectedEntry = entry;
@@ -218,6 +200,7 @@ public partial class VaultViewModel : ViewModelBase
     private void GeneratePassword()
     {
         if (SelectedEntry is null) return;
+        _session.RegisterActivity();
         SelectedEntry.Password = PasswordGenerator.Generate();
         IsPasswordVisible = true;
     }
@@ -226,6 +209,7 @@ public partial class VaultViewModel : ViewModelBase
     private async Task CopyPassword()
     {
         if (SelectedEntry is null) return;
+        _session.RegisterActivity();
         await ClipboardService.CopyAsync(SelectedEntry.Password);
         Flash("Contrasena copiada (se borra en 25 s).");
     }
@@ -234,6 +218,7 @@ public partial class VaultViewModel : ViewModelBase
     private async Task CopyUsername()
     {
         if (SelectedEntry is null) return;
+        _session.RegisterActivity();
         await ClipboardService.CopyAsync(SelectedEntry.Username, clearAfterSeconds: 60);
         Flash("Usuario copiado.");
     }
@@ -242,30 +227,20 @@ public partial class VaultViewModel : ViewModelBase
     private void TogglePasswordVisibility() => IsPasswordVisible = !IsPasswordVisible;
 
     [RelayCommand]
-    private void Lock()
-    {
-        _sessionTimer.Stop();
-        Locked?.Invoke();
-    }
-
-    /// <summary>Fired by the session timer after the timeout; forces a return to the login screen.</summary>
-    private void AutoLock()
-    {
-        _sessionTimer.Stop();
-        StatusMessage = "Sesion cerrada por seguridad (8 horas).";
-        Locked?.Invoke();
-    }
+    private void Lock() => _session.Lock();
 
     private void Persist(string message)
     {
+        _session.RegisterActivity();
         try
         {
-            _vault.Save(_all, _masterPassword);
+            _session.Save();
             Flash(message);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Flash("Error al guardar: " + ex.Message);
+            // Do not surface internal details (paths, IO) to the UI.
+            Flash("No se pudieron guardar los cambios.");
         }
     }
 

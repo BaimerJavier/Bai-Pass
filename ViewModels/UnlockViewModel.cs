@@ -8,13 +8,15 @@ namespace PasswordManager.ViewModels;
 
 /// <summary>
 /// First screen: create a new vault (with a master password) or unlock the existing one.
+/// The typed password is handed to the <see cref="SessionManager"/> and then cleared from
+/// this ViewModel so it is not held for the session.
 /// </summary>
 public partial class UnlockViewModel : ViewModelBase
 {
-    private readonly VaultService _vault;
+    private readonly SessionManager _session;
 
-    /// <summary>Raised with the verified master password once the vault is open.</summary>
-    public event Action<string>? Unlocked;
+    /// <summary>Raised once the vault is open.</summary>
+    public event Action? Unlocked;
 
     /// <summary>True when no vault exists yet, so we show the "create master password" flow.</summary>
     public bool IsCreateMode { get; }
@@ -28,10 +30,10 @@ public partial class UnlockViewModel : ViewModelBase
     [ObservableProperty] public partial string ErrorMessage { get; set; } = "";
     [ObservableProperty] public partial bool IsBusy { get; set; }
 
-    public UnlockViewModel(VaultService vault)
+    public UnlockViewModel(SessionManager session)
     {
-        _vault = vault;
-        IsCreateMode = !_vault.VaultExists();
+        _session = session;
+        IsCreateMode = !_session.VaultExists;
     }
 
     [RelayCommand]
@@ -61,9 +63,9 @@ public partial class UnlockViewModel : ViewModelBase
             IsBusy = true;
             try
             {
-                // Create an empty encrypted vault right away so the file exists.
-                _vault.Save(new System.Collections.Generic.List<Models.PasswordEntry>(), MasterPassword);
-                Unlocked?.Invoke(MasterPassword);
+                _session.CreateNew(MasterPassword);
+                ClearInputs();
+                Unlocked?.Invoke();
             }
             catch (Exception ex)
             {
@@ -76,18 +78,33 @@ public partial class UnlockViewModel : ViewModelBase
             IsBusy = true;
             try
             {
-                _ = _vault.Load(MasterPassword); // throws if password is wrong
-                Unlocked?.Invoke(MasterPassword);
+                _session.Unlock(MasterPassword);
+                ClearInputs();
+                Unlocked?.Invoke();
             }
             catch (CryptographicException)
             {
-                ErrorMessage = "Contrasena incorrecta.";
+                // Unified message: do not reveal whether it was a wrong password or a
+                // tampered/corrupted file (avoids an oracle).
+                ErrorMessage = "No se pudo desbloquear la boveda. La contrasena es incorrecta o el archivo esta danado.";
             }
-            catch (Exception ex)
+            catch (System.IO.InvalidDataException)
             {
-                ErrorMessage = "No se pudo abrir la boveda: " + ex.Message;
+                ErrorMessage = "No se pudo desbloquear la boveda. La contrasena es incorrecta o el archivo esta danado.";
+            }
+            catch (Exception)
+            {
+                ErrorMessage = "No se pudo abrir la boveda.";
             }
             finally { IsBusy = false; }
         }
+    }
+
+    private void ClearInputs()
+    {
+        // Drop our references to the typed password promptly. The underlying string stays
+        // GC-managed (cannot be zeroed), but it is no longer retained for the session.
+        MasterPassword = "";
+        ConfirmPassword = "";
     }
 }
