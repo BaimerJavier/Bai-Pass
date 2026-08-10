@@ -21,15 +21,16 @@ public class VaultService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = false };
 
-    public string VaultPath { get; }
+    private readonly VaultStorage _storage;
+
+    public string VaultPath => _storage.VaultPath;
 
     public VaultService() : this(ResolveDefaultPath()) { }
 
     /// <summary>Explicit-path constructor, used by tests to isolate the vault file.</summary>
     public VaultService(string vaultPath)
     {
-        VaultPath = vaultPath;
-        Directory.CreateDirectory(Path.GetDirectoryName(vaultPath)!);
+        _storage = new VaultStorage(vaultPath);
     }
 
     private static string ResolveDefaultPath()
@@ -45,15 +46,15 @@ public class VaultService
         return Path.Combine(dir, "vault.dat");
     }
 
-    public bool VaultExists() => File.Exists(VaultPath);
+    public bool VaultExists() => _storage.Exists;
 
     /// <summary>Reads the salt stored in the vault header (needed to derive the key at unlock).</summary>
-    public byte[] ReadSalt() => CryptoService.ReadSalt(File.ReadAllBytes(VaultPath));
+    public byte[] ReadSalt() => CryptoService.ReadSalt(_storage.Read());
 
     /// <summary>Decrypts and deserializes the entries using an already-derived key.</summary>
     public List<PasswordEntry> LoadWithKey(ReadOnlySpan<byte> key)
     {
-        byte[] file = File.ReadAllBytes(VaultPath);
+        byte[] file = _storage.Read();
         byte[] json = CryptoService.DecryptWithKey(file, key);
         try
         {
@@ -69,7 +70,10 @@ public class VaultService
         }
     }
 
-    /// <summary>Serializes, encrypts with the given key+salt, and writes atomically (temp + replace).</summary>
+    /// <summary>
+    /// Serializes, encrypts with the given key+salt, and writes crash-safely: the temp file is
+    /// verified to decrypt back before it atomically replaces the vault (old one kept as backup).
+    /// </summary>
     public void SaveWithKey(IEnumerable<PasswordEntry> entries, ReadOnlySpan<byte> key, byte[] salt)
     {
         string text = JsonSerializer.Serialize(entries, JsonOptions);
@@ -84,12 +88,25 @@ public class VaultService
             CryptographicOperations.ZeroMemory(plaintext);
         }
 
-        string tmp = VaultPath + ".tmp";
-        File.WriteAllBytes(tmp, file);
-        if (File.Exists(VaultPath))
-            File.Replace(tmp, VaultPath, null);
-        else
-            File.Move(tmp, VaultPath);
+        // Short-lived key copy so the verify closure can re-decrypt the temp file; zeroed after.
+        byte[] keyCopy = key.ToArray();
+        try
+        {
+            _storage.WriteVerified(file, candidate =>
+            {
+                try
+                {
+                    byte[] rt = CryptoService.DecryptWithKey(candidate, keyCopy);
+                    CryptographicOperations.ZeroMemory(rt);
+                    return true;
+                }
+                catch { return false; }
+            });
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(keyCopy);
+        }
     }
 
     // ---- Password-based wrappers kept for the create-vault path and tests ----
