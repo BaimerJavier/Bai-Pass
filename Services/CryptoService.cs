@@ -62,6 +62,12 @@ public static class CryptoService
             int iters = BinaryPrimitives.ReadInt32LittleEndian(file.AsSpan(o, 4)); o += 4;
             int par = file[o]; o += 1;
             byte[] salt = file.AsSpan(o, SaltSize).ToArray();
+            // The header is untrusted input: bound the Argon2 cost parameters so a crafted
+            // vault cannot trigger a huge allocation (memory) or an unbounded work factor.
+            if (mem is < 8 or > 1_048_576 ||     // 8 KiB .. 1 GiB
+                iters is < 1 or > 24 ||
+                par is < 1 or > 16)
+                throw new InvalidDataException("Parametros KDF del vault fuera de rango.");
             return new VaultFormat
             {
                 Kdf = VaultKdf.Argon2id, Salt = salt,

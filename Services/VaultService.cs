@@ -35,10 +35,13 @@ public class VaultService
 
     private static string ResolveDefaultPath()
     {
-        // Optional override (used for isolated testing); falls back to the per-user location.
+#if DEBUG
+        // Test-only override to isolate the vault file; compiled out of Release builds so it
+        // cannot be used to redirect a user's vault in production.
         string? overridePath = Environment.GetEnvironmentVariable("BAIPASS_VAULT");
         if (!string.IsNullOrWhiteSpace(overridePath))
             return overridePath;
+#endif
 
         string dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

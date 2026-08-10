@@ -25,9 +25,11 @@ public class SettingsService
 
     private static string DefaultDirectory()
     {
+#if DEBUG
         string? overridePath = Environment.GetEnvironmentVariable("BAIPASS_VAULT");
         if (!string.IsNullOrWhiteSpace(overridePath))
             return Path.GetDirectoryName(overridePath)!;
+#endif
 
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
