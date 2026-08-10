@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    name: Build, test & dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: |
+          dotnet restore PasswordManager.csproj
+          dotnet restore tests/BaiPass.Tests/BaiPass.Tests.csproj
+
+      - name: Build (Release)
+        run: dotnet build PasswordManager.csproj -c Release --no-restore
+
+      - name: Test
+        run: dotnet test tests/BaiPass.Tests/BaiPass.Tests.csproj -c Release
+
+      - name: Dependency vulnerability audit
+        run: |
+          set -e
+          echo "Checking for vulnerable NuGet packages..."
+          output=$(dotnet list PasswordManager.csproj package --vulnerable --include-transitive 2>&1)
+          echo "$output"
+          if echo "$output" | grep -qi "has the following vulnerable"; then
+            echo "::error::Vulnerable packages detected."
+            exit 1
+          fi
