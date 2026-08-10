@@ -15,6 +15,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly SessionManager _session = new(new VaultService());
     private readonly SettingsService _settingsService = new();
     private readonly AppSettings _settings;
+    private readonly ISystemLockMonitor _osLock = new SystemLockMonitor();
 
     [ObservableProperty]
     public partial ViewModelBase CurrentView { get; set; }
@@ -27,6 +28,13 @@ public partial class MainViewModel : ViewModelBase
         _session.Locked += OnLocked;
         // Inactivity timeout fires off the UI thread; marshal the actual lock onto it.
         _session.AutoLockRequested += () => Dispatcher.UIThread.Post(_session.Lock);
+
+        // OS events (screen lock, session switch, suspend) also force a lock.
+        _osLock.LockRequested += () => Dispatcher.UIThread.Post(() =>
+        {
+            if (_session.IsUnlocked) _session.Lock();
+        });
+        _osLock.Start();
 
         CurrentView = CreateUnlockView();
     }
