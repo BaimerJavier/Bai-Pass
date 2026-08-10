@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PasswordManager.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             x:Class="PasswordManager.Views.UnlockView"
+             x:DataType="vm:UnlockViewModel">
+
+    <Border Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Background="{StaticResource AppSurfaceBrush}"
+                BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
+                CornerRadius="16" Padding="36,32">
+        <StackPanel Width="360" Spacing="14"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <Border Background="{StaticResource AppAccentBrush}" CornerRadius="18"
+                    Width="72" Height="72" HorizontalAlignment="Center">
+                <PathIcon Data="{StaticResource IconKey}" Width="36" Height="36" Foreground="White" />
+            </Border>
+
+            <TextBlock Text="Bai-Pass" FontSize="26" FontWeight="Bold"
+                       HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+            <TextBlock Text="{Binding Title}"
+                       FontSize="22" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" TextAlignment="Center" />
+
+            <TextBlock Text="Tu contrasena maestra cifra toda la boveda. Si la olvidas, no hay forma de recuperar los datos."
+                       IsVisible="{Binding IsCreateMode}"
+                       TextWrapping="Wrap" Opacity="0.7" FontSize="12"
+                       TextAlignment="Center" />
+
+            <TextBox x:Name="MasterBox"
+                     PlaceholderText="Contrasena maestra"
+                     PasswordChar="●"
+                     Text="{Binding MasterPassword}" />
+
+            <TextBox PlaceholderText="Confirmar contrasena"
+                     PasswordChar="●"
+                     IsVisible="{Binding IsCreateMode}"
+                     Text="{Binding ConfirmPassword}" />
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="#E53935"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       TextWrapping="Wrap" />
+
+            <Button Content="{Binding ActionText}"
+                    Command="{Binding SubmitCommand}"
+                    IsDefault="True"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Classes="accent" />
+        </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

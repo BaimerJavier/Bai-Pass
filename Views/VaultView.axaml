@@ -1,0 +1,243 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PasswordManager.ViewModels"
+             xmlns:model="using:PasswordManager.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             x:Class="PasswordManager.Views.VaultView"
+             x:DataType="vm:VaultViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <!-- Top bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Border Background="{StaticResource AppAccentBrush}" CornerRadius="9" Width="34" Height="34" VerticalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconKey}" Width="18" Height="18" Foreground="White" />
+                </Border>
+                <TextBlock Text="Bai-Pass" FontSize="19" FontWeight="Bold" VerticalAlignment="Center" />
+                <Border Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="10" Padding="9,2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding EntryCount}" FontSize="12" Foreground="{StaticResource AppAccentHoverBrush}" FontWeight="SemiBold" />
+                </Border>
+            </StackPanel>
+
+            <TextBox Grid.Column="1" PlaceholderText="Buscar..." Margin="16,0"
+                     Text="{Binding SearchText}" MaxWidth="360" HorizontalAlignment="Stretch">
+                <TextBox.InnerLeftContent>
+                    <PathIcon Data="{StaticResource IconSearch}" Width="15" Height="15"
+                              Margin="10,0,0,0" Foreground="{StaticResource AppTextMutedBrush}" />
+                </TextBox.InnerLeftContent>
+            </TextBox>
+
+            <Button Grid.Column="2" Command="{Binding LockCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <PathIcon Data="{StaticResource IconLock}" Width="15" Height="15" />
+                    <TextBlock Text="Bloquear" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Main area: list + detail -->
+        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+
+            <!-- List -->
+            <Grid Grid.Column="0" RowDefinitions="*,Auto" Margin="0,0,10,0">
+                <Border Grid.Row="0" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="6">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Groups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FolderGroup">
+                                    <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                              Margin="0,0,0,4" Padding="0" HorizontalAlignment="Stretch">
+                                        <Expander.Header>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15"
+                                                          Foreground="{StaticResource AppAccentHoverBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <Border Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.8" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Expander.Header>
+
+                                        <ItemsControl ItemsSource="{Binding Entries}" Margin="6,2,0,2">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="model:PasswordEntry">
+                                                    <Button Classes="entryrow"
+                                                            Classes.selected="{Binding IsSelected}"
+                                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).SelectEntryCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{Binding Username}" Opacity="0.6" FontSize="12"
+                                                                       IsVisible="{Binding Username, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                <Button Grid.Row="1" Content="+ Agregar entrada"
+                        Command="{Binding AddEntryCommand}"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Classes="accent" />
+            </Grid>
+
+            <!-- Detail -->
+            <Border Grid.Column="1" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
+
+                <!-- Placeholder when nothing selected -->
+                <Panel>
+                    <TextBlock Text="Selecciona una entrada o crea una nueva."
+                               Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsVisible="{Binding !HasSelection}" />
+
+                    <ScrollViewer IsVisible="{Binding HasSelection}">
+                        <StackPanel Spacing="12" DataContext="{Binding SelectedEntry}">
+
+                            <TextBlock Text="Titulo" FontSize="12" Opacity="0.7" />
+                            <TextBox Text="{Binding Title}" />
+
+                            <TextBlock Text="Carpeta (escribe una nueva o elige existente)" FontSize="12" Opacity="0.7" />
+                            <AutoCompleteBox Text="{Binding Folder, Mode=TwoWay}"
+                                             ItemsSource="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).FolderNames}"
+                                             FilterMode="Contains"
+                                             MinimumPrefixLength="0"
+                                             PlaceholderText="Sin carpeta"
+                                             HorizontalAlignment="Stretch" />
+
+                            <TextBlock Text="Usuario / correo" FontSize="12" Opacity="0.7" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Grid.Column="0" Text="{Binding Username}" />
+                                <Button Grid.Column="1" Margin="6,0,0,0"
+                                        ToolTip.Tip="Copiar usuario"
+                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyUsernameCommand}">
+                                    <PathIcon Data="{StaticResource IconCopy}" Width="16" Height="16" />
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="Contrasena" FontSize="12" Opacity="0.7" />
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                                  DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}">
+                                <Panel Grid.Column="0">
+                                    <TextBox Text="{Binding SelectedEntry.Password}" PasswordChar="●"
+                                             IsVisible="{Binding !IsPasswordVisible}" />
+                                    <TextBox Text="{Binding SelectedEntry.Password}"
+                                             IsVisible="{Binding IsPasswordVisible}" />
+                                </Panel>
+                                <Button Grid.Column="1" Margin="6,0,0,0"
+                                        ToolTip.Tip="Mostrar / ocultar"
+                                        Command="{Binding TogglePasswordVisibilityCommand}">
+                                    <PathIcon Data="{StaticResource IconEye}" Width="16" Height="16" />
+                                </Button>
+                                <Button Grid.Column="2" Margin="6,0,0,0"
+                                        ToolTip.Tip="Copiar contrasena"
+                                        Command="{Binding CopyPasswordCommand}">
+                                    <PathIcon Data="{StaticResource IconCopy}" Width="16" Height="16" />
+                                </Button>
+                                <Button Grid.Column="3" Margin="6,0,0,0"
+                                        ToolTip.Tip="Generar contrasena fuerte"
+                                        Command="{Binding GeneratePasswordCommand}">
+                                    <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"
+                                              Foreground="{StaticResource AppAccentHoverBrush}" />
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="Sitio web / URL" FontSize="12" Opacity="0.7" />
+                            <TextBox Text="{Binding Url}" />
+
+                            <TextBlock Text="Notas" FontSize="12" Opacity="0.7" />
+                            <TextBox Text="{Binding Notes}" AcceptsReturn="True"
+                                     Height="90" TextWrapping="Wrap" />
+
+                            <Grid ColumnDefinitions="*,Auto"
+                                  DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}"
+                                  Margin="0,8,0,0">
+                                <Button Grid.Column="0"
+                                        Command="{Binding RequestDeleteCommand}"
+                                        HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <PathIcon Data="{StaticResource IconTrash}" Width="15" Height="15" />
+                                        <TextBlock Text="Eliminar" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1"
+                                        Command="{Binding SaveEntryCommand}"
+                                        Classes="accent" HorizontalContentAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <PathIcon Data="{StaticResource IconSave}" Width="15" Height="15" />
+                                        <TextBlock Text="Guardar cambios" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Panel>
+            </Border>
+        </Grid>
+
+        <!-- Status bar -->
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}"
+                   Foreground="#43A047" Margin="2,8,0,0" MinHeight="18"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+        <!-- Two-step delete confirmation overlay -->
+        <Border Grid.RowSpan="3" Margin="-12" Background="#B3000000"
+                IsVisible="{Binding IsDeleteConfirmActive}">
+            <Border Background="{StaticResource AppSurfaceBrush}"
+                    BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="28" Width="440"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Panel>
+                <!-- Step 1: first confirmation -->
+                <StackPanel Spacing="16" IsVisible="{Binding DeleteStep1Visible}">
+                    <Border Background="#33E5484D" CornerRadius="16" Width="60" Height="60"
+                            HorizontalAlignment="Center">
+                        <PathIcon Data="{StaticResource IconTrash}" Width="28" Height="28" Foreground="#E5484D" />
+                    </Border>
+                    <TextBlock Text="Eliminar entrada" FontSize="19" FontWeight="Bold"
+                               HorizontalAlignment="Center" />
+                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Opacity="0.85"
+                               Text="{Binding DeleteTargetName, StringFormat='Estas a punto de eliminar &quot;{0}&quot;. Se pediran dos confirmaciones porque no se puede deshacer.'}" />
+                    <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+                        <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Command="{Binding CancelDeleteCommand}" />
+                        <Button Grid.Column="1" Content="Continuar" Margin="6,0,0,0"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Classes="danger" Command="{Binding ConfirmDeleteStep1Command}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Step 2: final re-confirmation -->
+                <StackPanel Spacing="16" IsVisible="{Binding DeleteStep2Visible}">
+                    <Border Background="#33E5484D" CornerRadius="16" Width="60" Height="60"
+                            HorizontalAlignment="Center">
+                        <PathIcon Data="{StaticResource IconTrash}" Width="28" Height="28" Foreground="#E5484D" />
+                    </Border>
+                    <TextBlock Text="Confirmacion final" FontSize="19" FontWeight="Bold"
+                               HorizontalAlignment="Center" Foreground="#E5484D" />
+                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Opacity="0.85"
+                               Text="{Binding DeleteTargetName, StringFormat='Esta accion es PERMANENTE y no se puede deshacer. Eliminar definitivamente &quot;{0}&quot;?'}" />
+                    <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+                        <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Command="{Binding CancelDeleteCommand}" />
+                        <Button Grid.Column="1" Content="Eliminar definitivamente" Margin="6,0,0,0"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Classes="danger" Command="{Binding ConfirmDeleteStep2Command}" />
+                    </Grid>
+                </StackPanel>
+              </Panel>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

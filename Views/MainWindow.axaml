@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PasswordManager.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+        x:Class="PasswordManager.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/bai-pass.ico"
+        Width="960" Height="620"
+        MinWidth="720" MinHeight="480"
+        Title="Bai-Pass">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <ContentControl Content="{Binding CurrentView}" />
+
+</Window>

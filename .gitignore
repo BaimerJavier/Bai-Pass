@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+
+# Publish / distribution artifacts (large self-contained binaries)
+dist/
+publish/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+.DS_Store
