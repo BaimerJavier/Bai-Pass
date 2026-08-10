@@ -47,6 +47,22 @@
                     </ComboBox>
                 </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            ToolTip.Tip="Borrar la contrasena del portapapeles tras copiarla">
+                    <PathIcon Data="{StaticResource IconCopy}" Width="13" Height="13"
+                              Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="Portapapeles:" FontSize="12" Opacity="0.7" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding ClipboardOptions}"
+                              SelectedItem="{Binding SelectedClipboardSeconds}"
+                              MinWidth="80" VerticalAlignment="Center">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StringFormat='{}{0} s'}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
                 <Button Command="{Binding LockCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <PathIcon Data="{StaticResource IconLock}" Width="15" Height="15" />

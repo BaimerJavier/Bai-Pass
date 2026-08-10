@@ -36,6 +36,11 @@ public partial class VaultViewModel : ViewModelBase
 
     [ObservableProperty] public partial int SelectedAutoLockMinutes { get; set; }
 
+    /// <summary>Clipboard auto-clear options offered in the UI (seconds).</summary>
+    public int[] ClipboardOptions { get; } = { 5, 10, 15, 30 };
+
+    [ObservableProperty] public partial int SelectedClipboardSeconds { get; set; }
+
     /// <summary>Distinct folder names, for the "Carpeta" autocomplete in the detail panel.</summary>
     public ObservableCollection<string> FolderNames { get; } = new();
 
@@ -64,6 +69,7 @@ public partial class VaultViewModel : ViewModelBase
         _settings = settings;
         _all = _session.Entries;
         SelectedAutoLockMinutes = settings.AutoLockMinutes;
+        SelectedClipboardSeconds = settings.ClipboardClearSeconds;
         RefreshGroups();
     }
 
@@ -73,6 +79,13 @@ public partial class VaultViewModel : ViewModelBase
         _session.AutoLockTimeout = TimeSpan.FromMinutes(value);
         _session.RegisterActivity();
         _settings.AutoLockMinutes = value;
+        _settingsService.Save(_settings);
+    }
+
+    partial void OnSelectedClipboardSecondsChanged(int value)
+    {
+        if (value <= 0) return;
+        _settings.ClipboardClearSeconds = value;
         _settingsService.Save(_settings);
     }
 
@@ -229,8 +242,9 @@ public partial class VaultViewModel : ViewModelBase
     {
         if (SelectedEntry is null) return;
         _session.RegisterActivity();
-        await ClipboardService.CopyAsync(SelectedEntry.Password);
-        Flash("Contrasena copiada (se borra en 25 s).");
+        int seconds = _settings.ClipboardClearSeconds;
+        await ClipboardService.CopyAsync(SelectedEntry.Password, seconds);
+        Flash($"Contrasena copiada (se borra en {seconds} s).");
     }
 
     [RelayCommand]

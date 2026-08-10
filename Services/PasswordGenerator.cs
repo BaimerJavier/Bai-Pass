@@ -1,32 +1,59 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace PasswordManager.Services;
 
-/// <summary>Generates strong random passwords using a cryptographic RNG.</summary>
+/// <summary>
+/// Generates strong random passwords using only a cryptographic RNG
+/// (<see cref="RandomNumberGenerator"/>). Never uses Random/Guid/DateTime for entropy.
+/// </summary>
 public static class PasswordGenerator
 {
-    private const string Lower = "abcdefghijkmnopqrstuvwxyz";      // no l
-    private const string Upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";       // no I, O
-    private const string Digits = "23456789";                     // no 0, 1
+    // Ambiguous-excluded sets (default) and full sets.
+    private const string LowerSafe = "abcdefghijkmnopqrstuvwxyz";     // no l
+    private const string UpperSafe = "ABCDEFGHJKLMNPQRSTUVWXYZ";      // no I, O
+    private const string DigitsSafe = "23456789";                    // no 0, 1
+    private const string LowerFull = "abcdefghijklmnopqrstuvwxyz";
+    private const string UpperFull = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private const string DigitsFull = "0123456789";
     private const string Symbols = "!@#$%^&*()-_=+[]{}";
 
     public static string Generate(int length = 20,
-        bool useUpper = true, bool useDigits = true, bool useSymbols = true)
+        bool useLower = true, bool useUpper = true, bool useDigits = true, bool useSymbols = true,
+        bool excludeAmbiguous = true)
     {
-        if (length < 4) length = 4;
+        // Build the enabled category alphabets.
+        var categories = new List<string>();
+        if (useLower) categories.Add(excludeAmbiguous ? LowerSafe : LowerFull);
+        if (useUpper) categories.Add(excludeAmbiguous ? UpperSafe : UpperFull);
+        if (useDigits) categories.Add(excludeAmbiguous ? DigitsSafe : DigitsFull);
+        if (useSymbols) categories.Add(Symbols);
 
-        var pool = new StringBuilder(Lower);
-        if (useUpper) pool.Append(Upper);
-        if (useDigits) pool.Append(Digits);
-        if (useSymbols) pool.Append(Symbols);
+        if (categories.Count == 0) categories.Add(LowerSafe); // never produce an empty alphabet
+        if (length < categories.Count) length = categories.Count; // room for one of each
 
-        string chars = pool.ToString();
-        var sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++)
-            sb.Append(chars[RandomNumberGenerator.GetInt32(chars.Length)]);
-        return sb.ToString();
+        string all = string.Concat(categories);
+        var chars = new char[length];
+
+        // Guarantee at least one character from every enabled category...
+        int i = 0;
+        foreach (var cat in categories)
+            chars[i++] = cat[RandomNumberGenerator.GetInt32(cat.Length)];
+
+        // ...fill the rest from the combined alphabet...
+        for (; i < length; i++)
+            chars[i] = all[RandomNumberGenerator.GetInt32(all.Length)];
+
+        // ...then shuffle so the guaranteed characters are not in fixed positions (Fisher-Yates).
+        for (int n = length - 1; n > 0; n--)
+        {
+            int j = RandomNumberGenerator.GetInt32(n + 1);
+            (chars[n], chars[j]) = (chars[j], chars[n]);
+        }
+
+        return new string(chars);
     }
 
     /// <summary>Rough strength score 0..4 based on length and character variety.</summary>
