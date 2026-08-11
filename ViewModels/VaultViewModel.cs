@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -27,6 +29,20 @@ public partial class VaultViewModel : ViewModelBase
 
     // Remembers each folder's expanded/collapsed state across list rebuilds.
     private readonly Dictionary<string, bool> _expandState = new();
+
+    // Auto-save: the entry we're currently listening to, and a debounce timer so we persist
+    // shortly after the user stops typing instead of on every keystroke.
+    private PasswordEntry? _subscribed;
+    private CancellationTokenSource? _autoSaveCts;
+    private bool _pendingAutoSave;
+
+    // Fields whose edits should trigger an auto-save (ignore IsSelected/Modified/etc.).
+    private static readonly HashSet<string> SavedFields = new()
+    {
+        nameof(PasswordEntry.Title), nameof(PasswordEntry.Username),
+        nameof(PasswordEntry.Password), nameof(PasswordEntry.Url),
+        nameof(PasswordEntry.Notes), nameof(PasswordEntry.Folder),
+    };
 
     /// <summary>Folders shown in the sidebar (collapsible groups of entries).</summary>
     public ObservableCollection<FolderGroup> Groups { get; } = new();
@@ -97,8 +113,58 @@ public partial class VaultViewModel : ViewModelBase
 
     partial void OnSelectedEntryChanged(PasswordEntry? value)
     {
+        // Moving to another entry: flush any pending edit to disk, then re-listen.
+        FlushAutoSave();
+
+        if (_subscribed is not null)
+            _subscribed.PropertyChanged -= OnEntryFieldChanged;
+        _subscribed = value;
+        if (_subscribed is not null)
+            _subscribed.PropertyChanged += OnEntryFieldChanged;
+
+        // Reflect any label/folder change from the entry we just left.
+        RefreshGroups();
+
         IsPasswordVisible = false;
         OnPropertyChanged(nameof(HasSelection));
+    }
+
+    private void OnEntryFieldChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is null || !SavedFields.Contains(e.PropertyName)) return;
+        _session.RegisterActivity();
+        ScheduleAutoSave();
+    }
+
+    // Debounced auto-save: persist ~600ms after the last edit so typing isn't written per key.
+    private void ScheduleAutoSave()
+    {
+        _pendingAutoSave = true;
+        _autoSaveCts?.Cancel();
+        _autoSaveCts = new CancellationTokenSource();
+        var token = _autoSaveCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(600, token);
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(FlushAutoSave);
+            }
+            catch (TaskCanceledException) { /* superseded by a newer edit */ }
+        }, token);
+    }
+
+    /// <summary>Writes any pending edit to disk immediately (no-op if nothing pending).</summary>
+    private void FlushAutoSave()
+    {
+        _autoSaveCts?.Cancel();
+        if (!_pendingAutoSave) return;
+        _pendingAutoSave = false;
+
+        if (SelectedEntry is not null)
+            SelectedEntry.Modified = DateTime.UtcNow;
+        PersistSilently("Guardado automatico.");
     }
 
     /// <summary>Selects an entry from the grouped list and updates the highlight.</summary>
@@ -260,7 +326,11 @@ public partial class VaultViewModel : ViewModelBase
     private void TogglePasswordVisibility() => IsPasswordVisible = !IsPasswordVisible;
 
     [RelayCommand]
-    private void Lock() => _session.Lock();
+    private void Lock()
+    {
+        FlushAutoSave(); // don't lose an in-progress edit when locking
+        _session.Lock();
+    }
 
     private void Persist(string message)
     {
@@ -273,6 +343,20 @@ public partial class VaultViewModel : ViewModelBase
         catch (Exception)
         {
             // Do not surface internal details (paths, IO) to the UI.
+            Flash("No se pudieron guardar los cambios.");
+        }
+    }
+
+    /// <summary>Saves without rebuilding the list (used by auto-save while the user is editing).</summary>
+    private void PersistSilently(string message)
+    {
+        try
+        {
+            _session.Save();
+            Flash(message);
+        }
+        catch (Exception)
+        {
             Flash("No se pudieron guardar los cambios.");
         }
     }
