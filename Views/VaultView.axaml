@@ -85,14 +85,43 @@
                                     <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                               Margin="0,0,0,4" Padding="0" HorizontalAlignment="Stretch">
                                         <Expander.Header>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15"
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" VerticalAlignment="Center">
+                                                <PathIcon Grid.Column="0" Data="{StaticResource IconFolder}" Width="15" Height="15"
                                                           Foreground="{StaticResource AppAccentHoverBrush}" VerticalAlignment="Center" />
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <Border Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="9" Padding="7,1" VerticalAlignment="Center">
+
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center" Margin="8,0,0,0"
+                                                           IsVisible="{Binding !IsRenaming}" />
+                                                <TextBox Grid.Column="1" Text="{Binding EditingName}" IsVisible="{Binding IsRenaming}"
+                                                         Margin="8,0,0,0" MinHeight="26" Padding="6,2" FontSize="13" />
+
+                                                <Border Grid.Column="2" Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="9"
+                                                        Padding="7,1" VerticalAlignment="Center" Margin="8,0,0,0"
+                                                        IsVisible="{Binding !IsRenaming}">
                                                     <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.8" />
                                                 </Border>
-                                            </StackPanel>
+
+                                                <Button Grid.Column="3" Padding="5" Margin="6,0,0,0" IsVisible="{Binding !IsRenaming}"
+                                                        ToolTip.Tip="Renombrar carpeta"
+                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).BeginRenameFolderCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <PathIcon Data="{StaticResource IconEdit}" Width="13" Height="13" />
+                                                </Button>
+
+                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" Margin="6,0,0,0"
+                                                            IsVisible="{Binding IsRenaming}">
+                                                    <Button Padding="5" Classes="accent" ToolTip.Tip="Confirmar"
+                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CommitRenameFolderCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <PathIcon Data="{StaticResource IconCheck}" Width="13" Height="13" />
+                                                    </Button>
+                                                    <Button Padding="5" ToolTip.Tip="Cancelar"
+                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CancelRenameFolderCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
                                         </Expander.Header>
 
                                         <ItemsControl ItemsSource="{Binding Entries}" Margin="6,2,0,2">
@@ -138,7 +167,8 @@
                         <StackPanel Spacing="12" DataContext="{Binding SelectedEntry}">
 
                             <TextBlock Text="Titulo" FontSize="12" Opacity="0.7" />
-                            <TextBox Text="{Binding Title}" />
+                            <TextBox Text="{Binding Title}"
+                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
 
                             <TextBlock Text="Carpeta (escribe una nueva o elige existente)" FontSize="12" Opacity="0.7" />
                             <AutoCompleteBox Text="{Binding Folder, Mode=TwoWay}"
@@ -146,11 +176,13 @@
                                              FilterMode="Contains"
                                              MinimumPrefixLength="0"
                                              PlaceholderText="Sin carpeta"
-                                             HorizontalAlignment="Stretch" />
+                                             HorizontalAlignment="Stretch"
+                                             IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
 
                             <TextBlock Text="Usuario / correo" FontSize="12" Opacity="0.7" />
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Text="{Binding Username}" />
+                                <TextBox Grid.Column="0" Text="{Binding Username}"
+                                         IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
                                 <Button Grid.Column="1" Margin="6,0,0,0"
                                         ToolTip.Tip="Copiar usuario"
                                         Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyUsernameCommand}">
@@ -163,9 +195,9 @@
                                   DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}">
                                 <Panel Grid.Column="0">
                                     <TextBox Text="{Binding SelectedEntry.Password}" PasswordChar="●"
-                                             IsVisible="{Binding !IsPasswordVisible}" />
+                                             IsVisible="{Binding !IsPasswordVisible}" IsEnabled="{Binding IsEditing}" />
                                     <TextBox Text="{Binding SelectedEntry.Password}"
-                                             IsVisible="{Binding IsPasswordVisible}" />
+                                             IsVisible="{Binding IsPasswordVisible}" IsEnabled="{Binding IsEditing}" />
                                 </Panel>
                                 <Button Grid.Column="1" Margin="6,0,0,0"
                                         ToolTip.Tip="Mostrar / ocultar"
@@ -179,18 +211,21 @@
                                 </Button>
                                 <Button Grid.Column="3" Margin="6,0,0,0"
                                         ToolTip.Tip="Generar contrasena fuerte"
-                                        Command="{Binding GeneratePasswordCommand}">
+                                        Command="{Binding GeneratePasswordCommand}"
+                                        IsEnabled="{Binding IsEditing}">
                                     <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"
                                               Foreground="{StaticResource AppAccentHoverBrush}" />
                                 </Button>
                             </Grid>
 
                             <TextBlock Text="Sitio web / URL" FontSize="12" Opacity="0.7" />
-                            <TextBox Text="{Binding Url}" />
+                            <TextBox Text="{Binding Url}"
+                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
 
                             <TextBlock Text="Notas" FontSize="12" Opacity="0.7" />
                             <TextBox Text="{Binding Notes}" AcceptsReturn="True"
-                                     Height="90" TextWrapping="Wrap" />
+                                     Height="90" TextWrapping="Wrap"
+                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
 
                             <Grid ColumnDefinitions="*,Auto"
                                   DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}"
@@ -204,7 +239,17 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Grid.Column="1"
+                                        Command="{Binding EditCommand}"
+                                        IsVisible="{Binding !IsEditing}"
+                                        Classes="accent" HorizontalContentAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="7">
+                                        <PathIcon Data="{StaticResource IconEdit}" Width="15" Height="15" />
+                                        <TextBlock Text="Editar" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1"
                                         Command="{Binding SaveEntryCommand}"
+                                        IsVisible="{Binding IsEditing}"
                                         Classes="accent" HorizontalContentAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="7">
                                         <PathIcon Data="{StaticResource IconSave}" Width="15" Height="15" />

@@ -14,6 +14,12 @@ public partial class FolderGroup : ObservableObject
     /// <summary>Whether the group is expanded in the UI (persisted per-session).</summary>
     [ObservableProperty] public partial bool IsExpanded { get; set; } = true;
 
+    /// <summary>True while the header shows the rename textbox instead of the folder name.</summary>
+    [ObservableProperty] public partial bool IsRenaming { get; set; }
+
+    /// <summary>Working value of the rename textbox (committed via VaultViewModel.RenameFolder).</summary>
+    [ObservableProperty] public partial string EditingName { get; set; } = "";
+
     public ObservableCollection<PasswordEntry> Entries { get; } = new();
 
     public int Count => Entries.Count;

@@ -65,6 +65,9 @@ public partial class VaultViewModel : ViewModelBase
     [ObservableProperty] public partial bool IsPasswordVisible { get; set; }
     [ObservableProperty] public partial string StatusMessage { get; set; } = "";
 
+    /// <summary>Whether the detail panel's fields are unlocked for editing (off by default).</summary>
+    [ObservableProperty] public partial bool IsEditing { get; set; }
+
     // Two-step delete confirmation state.
     [ObservableProperty] public partial bool DeleteStep1Visible { get; set; }
     [ObservableProperty] public partial bool DeleteStep2Visible { get; set; }
@@ -126,11 +129,22 @@ public partial class VaultViewModel : ViewModelBase
         RefreshGroups();
 
         IsPasswordVisible = false;
+        IsEditing = false; // fields start locked; the user opts in via the "Editar" button
         OnPropertyChanged(nameof(HasSelection));
+    }
+
+    /// <summary>Unlocks the detail panel's fields so the selected entry can be edited.</summary>
+    [RelayCommand]
+    private void Edit()
+    {
+        if (SelectedEntry is null) return;
+        _session.RegisterActivity();
+        IsEditing = true;
     }
 
     private void OnEntryFieldChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!IsEditing) return; // ignore changes outside of edit mode (defense in depth)
         if (e.PropertyName is null || !SavedFields.Contains(e.PropertyName)) return;
         _session.RegisterActivity();
         ScheduleAutoSave();
@@ -242,8 +256,57 @@ public partial class VaultViewModel : ViewModelBase
         _all.Add(entry);
         RefreshGroups();
         SelectEntry(entry);
+        IsEditing = true; // a brand-new entry should be immediately fillable
         OnPropertyChanged(nameof(EntryCount));
         Persist("Entrada agregada.");
+    }
+
+    /// <summary>Renames a folder, moving every entry currently in it to the new name.</summary>
+    [RelayCommand]
+    private void BeginRenameFolder(FolderGroup? group)
+    {
+        if (group is null) return;
+        _session.RegisterActivity();
+        group.EditingName = group.Name;
+        group.IsRenaming = true;
+    }
+
+    [RelayCommand]
+    private void CommitRenameFolder(FolderGroup? group)
+    {
+        if (group is null) return;
+        group.IsRenaming = false;
+
+        string oldName = group.Name;
+        string newName = (group.EditingName ?? "").Trim();
+        if (newName.Equals(oldName, StringComparison.Ordinal)) return;
+
+        // An empty name (or explicitly typing the ungrouped label) un-files the entries.
+        string assign = newName.Length == 0 || newName.Equals(UngroupedName, StringComparison.OrdinalIgnoreCase)
+            ? "" : newName;
+
+        bool changed = false;
+        foreach (var e in _all)
+        {
+            string entryGroup = string.IsNullOrWhiteSpace(e.Folder) ? UngroupedName : e.Folder.Trim();
+            if (entryGroup.Equals(oldName, StringComparison.OrdinalIgnoreCase))
+            {
+                e.Folder = assign;
+                changed = true;
+            }
+        }
+        if (!changed) return;
+
+        _session.RegisterActivity();
+        RefreshGroups();
+        Persist($"Carpeta renombrada a \"{(assign.Length == 0 ? UngroupedName : assign)}\".");
+    }
+
+    [RelayCommand]
+    private void CancelRenameFolder(FolderGroup? group)
+    {
+        if (group is null) return;
+        group.IsRenaming = false;
     }
 
     // Step 0: user clicked the trash button -> ask for the first confirmation.
@@ -289,9 +352,12 @@ public partial class VaultViewModel : ViewModelBase
     private void SaveEntry()
     {
         if (SelectedEntry is null) return;
+        _autoSaveCts?.Cancel();
+        _pendingAutoSave = false;
         SelectedEntry.Modified = DateTime.UtcNow;
         RefreshGroups();
         Persist("Cambios guardados.");
+        IsEditing = false;
     }
 
     [RelayCommand]
