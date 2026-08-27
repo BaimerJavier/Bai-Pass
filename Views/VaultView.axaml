@@ -122,7 +122,7 @@
                                                     <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.8" />
                                                 </Border>
 
-                                                <Button Grid.Column="3" Padding="5" Margin="6,0,0,0" IsVisible="{Binding !IsRenaming}"
+                                                <Button Grid.Column="3" Classes="icon" Margin="6,0,0,0" IsVisible="{Binding !IsRenaming}"
                                                         ToolTip.Tip="Renombrar carpeta"
                                                         Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).BeginRenameFolderCommand}"
                                                         CommandParameter="{Binding}">
@@ -131,12 +131,12 @@
 
                                                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" Margin="6,0,0,0"
                                                             IsVisible="{Binding IsRenaming}">
-                                                    <Button Padding="5" Classes="accent" ToolTip.Tip="Confirmar"
+                                                    <Button Classes="icon accent" ToolTip.Tip="Confirmar"
                                                             Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CommitRenameFolderCommand}"
                                                             CommandParameter="{Binding}">
                                                         <PathIcon Data="{StaticResource IconCheck}" Width="13" Height="13" />
                                                     </Button>
-                                                    <Button Padding="5" ToolTip.Tip="Cancelar"
+                                                    <Button Classes="icon" ToolTip.Tip="Cancelar"
                                                             Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CancelRenameFolderCommand}"
                                                             CommandParameter="{Binding}">
                                                         <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
@@ -204,10 +204,10 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0" Text="{Binding Username}"
                                          IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
-                                <Button Grid.Column="1" Margin="6,0,0,0"
+                                <Button Grid.Column="1" Classes="icon" Margin="6,0,0,0"
                                         ToolTip.Tip="Copiar usuario"
                                         Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyUsernameCommand}">
-                                    <PathIcon Data="{StaticResource IconCopy}" Width="16" Height="16" />
+                                    <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
                                 </Button>
                             </Grid>
 
@@ -220,21 +220,21 @@
                                     <TextBox Text="{Binding SelectedEntry.Password}"
                                              IsVisible="{Binding IsPasswordVisible}" IsEnabled="{Binding IsEditing}" />
                                 </Panel>
-                                <Button Grid.Column="1" Margin="6,0,0,0"
+                                <Button Grid.Column="1" Classes="icon" Margin="6,0,0,0"
                                         ToolTip.Tip="Mostrar / ocultar"
                                         Command="{Binding TogglePasswordVisibilityCommand}">
-                                    <PathIcon Data="{StaticResource IconEye}" Width="16" Height="16" />
+                                    <PathIcon Data="{StaticResource IconEye}" Width="15" Height="15" />
                                 </Button>
-                                <Button Grid.Column="2" Margin="6,0,0,0"
+                                <Button Grid.Column="2" Classes="icon" Margin="6,0,0,0"
                                         ToolTip.Tip="Copiar contrasena"
                                         Command="{Binding CopyPasswordCommand}">
-                                    <PathIcon Data="{StaticResource IconCopy}" Width="16" Height="16" />
+                                    <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
                                 </Button>
-                                <Button Grid.Column="3" Margin="6,0,0,0"
+                                <Button Grid.Column="3" Classes="icon" Margin="6,0,0,0"
                                         ToolTip.Tip="Generar contrasena fuerte"
                                         Command="{Binding GeneratePasswordCommand}"
                                         IsEnabled="{Binding IsEditing}">
-                                    <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"
+                                    <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15"
                                               Foreground="{StaticResource AppAccentHoverBrush}" />
                                 </Button>
                             </Grid>

@@ -72,6 +72,16 @@
             <Setter Property="MinHeight" Value="38" />
         </Style>
 
+        <!-- Compact icon-only buttons (copy/eye/generate/rename); overrides the roomy default -->
+        <Style Selector="Button.icon">
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
         <!-- Accent (primary) button -->
         <Style Selector="Button.accent">
             <Setter Property="Background" Value="{StaticResource AppAccentBrush}" />
