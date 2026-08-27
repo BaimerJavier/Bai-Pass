@@ -105,6 +105,54 @@ public class SessionManagerTests : IDisposable
         Assert.Equal(0, count);
     }
 
+    [Fact]
+    public void RelocateTo_moves_saving_to_new_path_and_keeps_old_file()
+    {
+        using var s = NewSession();
+        s.CreateNew("clave");
+        s.Entries.Add(new PasswordEntry { Title = "Entry1" });
+        s.Save();
+
+        string newDir = Path.Combine(_dir, "newlocation");
+        Directory.CreateDirectory(newDir);
+        string newPath = Path.Combine(newDir, "vault.dat");
+
+        bool ok = s.RelocateTo(newPath);
+
+        Assert.True(ok);
+        Assert.Equal(newPath, s.VaultPath);
+        Assert.True(File.Exists(_vaultPath));   // old file left in place
+        Assert.True(File.Exists(newPath));      // new file created
+
+        // Session is still usable (key/entries untouched) and now saves to the new path.
+        s.Entries.Add(new PasswordEntry { Title = "Entry2" });
+        s.Save();
+
+        using var reopened = NewSessionAt(newPath);
+        reopened.Unlock("clave");
+        Assert.Equal(2, reopened.Entries.Count);
+    }
+
+    [Fact]
+    public void RelocateTo_refuses_when_destination_already_has_a_file()
+    {
+        using var s = NewSession();
+        s.CreateNew("clave");
+
+        string newDir = Path.Combine(_dir, "occupied");
+        Directory.CreateDirectory(newDir);
+        string newPath = Path.Combine(newDir, "vault.dat");
+        File.WriteAllText(newPath, "someone else's file");
+
+        bool ok = s.RelocateTo(newPath);
+
+        Assert.False(ok);
+        Assert.Equal(_vaultPath, s.VaultPath); // unchanged
+        Assert.Equal("someone else's file", File.ReadAllText(newPath)); // untouched
+    }
+
+    private static SessionManager NewSessionAt(string path) => new(new VaultService(path));
+
     public void Dispose()
     {
         try { Directory.Delete(_dir, recursive: true); } catch { /* best effort */ }

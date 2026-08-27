@@ -12,9 +12,9 @@ namespace PasswordManager.ViewModels;
 /// </summary>
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly SessionManager _session = new(new VaultService());
     private readonly SettingsService _settingsService = new();
     private readonly AppSettings _settings;
+    private readonly SessionManager _session;
     private readonly ISystemLockMonitor _osLock = new SystemLockMonitor();
 
     [ObservableProperty]
@@ -23,6 +23,12 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         _settings = _settingsService.Load();
+
+        // A configured custom location takes precedence over the per-user default.
+        string vaultPath = string.IsNullOrWhiteSpace(_settings.VaultPath)
+            ? VaultService.ResolveDefaultPath()
+            : _settings.VaultPath!;
+        _session = new SessionManager(new VaultService(vaultPath));
         _session.AutoLockTimeout = TimeSpan.FromMinutes(_settings.AutoLockMinutes);
 
         _session.Locked += OnLocked;

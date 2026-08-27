@@ -10,4 +10,7 @@ public class AppSettings
 
     /// <summary>Seconds before a copied password is cleared from the clipboard. Allowed: 5,10,15,30.</summary>
     public int ClipboardClearSeconds { get; set; } = 15;
+
+    /// <summary>Custom full path to vault.dat. Null/empty = use the default per-user location.</summary>
+    public string? VaultPath { get; set; }
 }

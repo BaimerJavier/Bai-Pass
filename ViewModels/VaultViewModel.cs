@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -396,6 +397,51 @@ public partial class VaultViewModel : ViewModelBase
     {
         FlushAutoSave(); // don't lose an in-progress edit when locking
         _session.Lock();
+    }
+
+    /// <summary>Quick access: opens the folder that currently holds vault.dat.</summary>
+    [RelayCommand]
+    private void OpenVaultFolder()
+    {
+        _session.RegisterActivity();
+        ShellService.OpenContainingFolder(_session.VaultPath);
+    }
+
+    /// <summary>
+    /// Lets the user pick a new folder for the vault. Copies the file there, verifies it,
+    /// and switches saves to the new location (no re-unlock needed). The old file is left in
+    /// place so the move is easy to undo.
+    /// </summary>
+    [RelayCommand]
+    private async Task ChangeVaultLocation()
+    {
+        _session.RegisterActivity();
+        string? folder = await FilePickerService.PickFolderAsync("Elige la carpeta donde se guardara la boveda");
+        if (string.IsNullOrWhiteSpace(folder)) return;
+
+        string newPath = Path.Combine(folder, "vault.dat");
+        if (string.Equals(Path.GetFullPath(newPath), Path.GetFullPath(_session.VaultPath), StringComparison.OrdinalIgnoreCase))
+        {
+            Flash("Esa ya es la carpeta actual.");
+            return;
+        }
+
+        try
+        {
+            if (!_session.RelocateTo(newPath))
+            {
+                Flash("Ya existe un vault.dat en esa carpeta, o no se pudo verificar la copia.");
+                return;
+            }
+
+            _settings.VaultPath = newPath;
+            _settingsService.Save(_settings);
+            Flash($"Boveda movida a: {folder}");
+        }
+        catch (Exception)
+        {
+            Flash("No se pudo cambiar la ubicacion de la boveda.");
+        }
     }
 
     private void Persist(string message)

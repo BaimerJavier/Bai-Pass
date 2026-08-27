@@ -18,6 +18,9 @@ public interface ISessionManager
     /// <summary>The decrypted entries. Empty and not meaningful while locked.</summary>
     IList<PasswordEntry> Entries { get; }
 
+    /// <summary>Where the vault file currently lives.</summary>
+    string VaultPath { get; }
+
     /// <summary>Idle time before the session auto-locks.</summary>
     TimeSpan AutoLockTimeout { get; set; }
 
@@ -41,4 +44,11 @@ public interface ISessionManager
 
     /// <summary>Locks the session: zeroizes the key, clears entries, raises <see cref="Locked"/>.</summary>
     void Lock();
+
+    /// <summary>
+    /// Copies the vault to a new location and switches future saves there (key/entries unchanged,
+    /// no re-unlock needed). The old file is left in place. Returns false if the destination
+    /// already has a file, or the copy could not be verified.
+    /// </summary>
+    bool RelocateTo(string newVaultPath);
 }

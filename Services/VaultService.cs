@@ -27,13 +27,14 @@ public class VaultService
 
     public VaultService() : this(ResolveDefaultPath()) { }
 
-    /// <summary>Explicit-path constructor, used by tests to isolate the vault file.</summary>
+    /// <summary>Explicit-path constructor, also used to point at a user-chosen vault location.</summary>
     public VaultService(string vaultPath)
     {
         _storage = new VaultStorage(vaultPath);
     }
 
-    private static string ResolveDefaultPath()
+    /// <summary>The per-user default location (used when no custom path is configured).</summary>
+    public static string ResolveDefaultPath()
     {
 #if DEBUG
         // Test-only override to isolate the vault file; compiled out of Release builds so it

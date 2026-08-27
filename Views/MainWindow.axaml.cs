@@ -16,6 +16,7 @@ public partial class MainWindow : Window
         {
             if (Clipboard is not null)
                 ClipboardService.Init(Clipboard);
+            FilePickerService.Init(this);
         };
 
         // Report user input as activity so the inactivity auto-lock resets. Tunnel + handled

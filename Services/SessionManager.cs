@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using PasswordManager.Models;
@@ -17,7 +18,7 @@ namespace PasswordManager.Services;
 /// </summary>
 public sealed class SessionManager : ISessionManager, IDisposable
 {
-    private readonly VaultService _vault;
+    private VaultService _vault;
     private readonly object _gate = new();
 
     private SecureSessionKey? _key;
@@ -41,6 +42,38 @@ public sealed class SessionManager : ISessionManager, IDisposable
     public bool IsUnlocked => _key is { IsDisposed: false };
     public bool VaultExists => _vault.VaultExists();
     public IList<PasswordEntry> Entries => _entries;
+
+    /// <summary>Where the vault file currently lives (reflects the last relocation).</summary>
+    public string VaultPath => _vault.VaultPath;
+
+    /// <summary>
+    /// Copies the current vault file to <paramref name="newVaultPath"/>, verifies the copy is
+    /// byte-identical, and switches future saves to that location. The session's key/entries
+    /// are untouched — no re-unlock needed. The file at the old location is left in place (not
+    /// deleted) so the move is easy to undo. Returns false (no changes made) if the destination
+    /// already has a file there, or the copy could not be verified.
+    /// </summary>
+    public bool RelocateTo(string newVaultPath)
+    {
+        lock (_gate)
+        {
+            if (File.Exists(newVaultPath)) return false;
+
+            string currentPath = _vault.VaultPath;
+            File.Copy(currentPath, newVaultPath);
+
+            bool identical = File.ReadAllBytes(currentPath).AsSpan()
+                .SequenceEqual(File.ReadAllBytes(newVaultPath));
+            if (!identical)
+            {
+                File.Delete(newVaultPath);
+                return false;
+            }
+
+            _vault = new VaultService(newVaultPath);
+            return true;
+        }
+    }
 
     public TimeSpan AutoLockTimeout { get; set; } = TimeSpan.FromMinutes(10);
 

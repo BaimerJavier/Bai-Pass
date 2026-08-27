@@ -63,6 +63,27 @@
                     </ComboBox>
                 </StackPanel>
 
+                <Button ToolTip.Tip="Ubicacion del archivo vault.dat">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15" />
+                        <TextBlock Text="Boveda" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuItem Header="Abrir carpeta" Command="{Binding OpenVaultFolderCommand}">
+                                <MenuItem.Icon>
+                                    <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Cambiar ubicacion..." Command="{Binding ChangeVaultLocationCommand}">
+                                <MenuItem.Icon>
+                                    <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
                 <Button Command="{Binding LockCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <PathIcon Data="{StaticResource IconLock}" Width="15" Height="15" />
