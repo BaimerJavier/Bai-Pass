@@ -2,52 +2,118 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PasswordManager.App"
              xmlns:local="using:PasswordManager"
-             RequestedThemeVariant="Dark">
+             RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
     <Application.Resources>
-        <!-- Modern dark palette -->
-        <Color x:Key="AppBackground">#0E0F14</Color>
-        <Color x:Key="AppSurface">#171922</Color>
-        <Color x:Key="AppSurfaceAlt">#1E2130</Color>
-        <Color x:Key="AppBorder">#2A2E3D</Color>
-        <Color x:Key="AppAccent">#7C5CFC</Color>
-        <Color x:Key="AppAccentHover">#9179FF</Color>
-        <Color x:Key="AppTextMuted">#8A90A2</Color>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
 
-        <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackground}" />
-        <SolidColorBrush x:Key="AppSurfaceBrush" Color="{StaticResource AppSurface}" />
-        <SolidColorBrush x:Key="AppSurfaceAltBrush" Color="{StaticResource AppSurfaceAlt}" />
-        <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorder}" />
-        <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccent}" />
-        <SolidColorBrush x:Key="AppAccentHoverBrush" Color="{StaticResource AppAccentHover}" />
-        <SolidColorBrush x:Key="AppTextMutedBrush" Color="{StaticResource AppTextMuted}" />
+                <!-- ===== Light: calm, high-contrast, enterprise ===== -->
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F4F9" />
+                    <SolidColorBrush x:Key="AppSurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="AppSurfaceAltBrush" Color="#F5F5FA" />
+                    <SolidColorBrush x:Key="AppInputBrush" Color="#F5F5FA" />
+                    <SolidColorBrush x:Key="AppBorderBrush" Color="#E6E6EF" />
+                    <SolidColorBrush x:Key="AppBorderStrongBrush" Color="#D2D2E0" />
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="#6D4AFF" />
+                    <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#5A38F0" />
+                    <SolidColorBrush x:Key="AppAccentTextBrush" Color="#5A38F0" />
+                    <SolidColorBrush x:Key="AppAccentSubtleBrush" Color="#146D4AFF" />
+                    <SolidColorBrush x:Key="AppAccentBorderBrush" Color="#446D4AFF" />
+                    <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#14141F" />
+                    <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#55556B" />
+                    <SolidColorBrush x:Key="AppTextMutedBrush" Color="#8E8EA6" />
+                    <SolidColorBrush x:Key="AppDangerBrush" Color="#E5484D" />
+                    <SolidColorBrush x:Key="AppDangerSubtleBrush" Color="#14E5484D" />
+                    <SolidColorBrush x:Key="AppSuccessBrush" Color="#16A34A" />
+                    <SolidColorBrush x:Key="AppHoverBrush" Color="#0D14141F" />
+                    <SolidColorBrush x:Key="AppButtonHoverBrush" Color="#EDEDF6" />
+                    <SolidColorBrush x:Key="AppButtonPressedBrush" Color="#E2E2EF" />
+                    <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#226D4AFF" Offset="0" />
+                        <GradientStop Color="#006D4AFF" Offset="1" />
+                    </LinearGradientBrush>
+                    <Color x:Key="SystemAccentColor">#6D4AFF</Color>
+                    <Color x:Key="SystemAccentColorDark1">#5A38F0</Color>
+                    <Color x:Key="SystemAccentColorDark2">#4A2CD0</Color>
+                    <Color x:Key="SystemAccentColorDark3">#3A20A8</Color>
+                    <Color x:Key="SystemAccentColorLight1">#7C5CFF</Color>
+                    <Color x:Key="SystemAccentColorLight2">#917AFF</Color>
+                    <Color x:Key="SystemAccentColorLight3">#C3B8FF</Color>
+                </ResourceDictionary>
 
-        <!-- Drive Fluent's accent (selection, focus, default button) to our violet -->
-        <Color x:Key="SystemAccentColor">#7C5CFC</Color>
-        <Color x:Key="SystemAccentColorDark1">#6D4CF0</Color>
-        <Color x:Key="SystemAccentColorDark2">#5C3FD6</Color>
-        <Color x:Key="SystemAccentColorDark3">#4A32B0</Color>
-        <Color x:Key="SystemAccentColorLight1">#9179FF</Color>
-        <Color x:Key="SystemAccentColorLight2">#A896FF</Color>
-        <Color x:Key="SystemAccentColorLight3">#C0B3FF</Color>
+                <!-- ===== Dark ===== -->
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0B0B12" />
+                    <SolidColorBrush x:Key="AppSurfaceBrush" Color="#13131C" />
+                    <SolidColorBrush x:Key="AppSurfaceAltBrush" Color="#1B1B27" />
+                    <SolidColorBrush x:Key="AppInputBrush" Color="#1B1B27" />
+                    <SolidColorBrush x:Key="AppBorderBrush" Color="#262634" />
+                    <SolidColorBrush x:Key="AppBorderStrongBrush" Color="#33334A" />
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="#7C5CFF" />
+                    <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#917AFF" />
+                    <SolidColorBrush x:Key="AppAccentTextBrush" Color="#A99BFF" />
+                    <SolidColorBrush x:Key="AppAccentSubtleBrush" Color="#2B7C5CFF" />
+                    <SolidColorBrush x:Key="AppAccentBorderBrush" Color="#667C5CFF" />
+                    <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#F1F1F8" />
+                    <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#A9A9C0" />
+                    <SolidColorBrush x:Key="AppTextMutedBrush" Color="#7A7A93" />
+                    <SolidColorBrush x:Key="AppDangerBrush" Color="#FF6369" />
+                    <SolidColorBrush x:Key="AppDangerSubtleBrush" Color="#26FF6369" />
+                    <SolidColorBrush x:Key="AppSuccessBrush" Color="#3DD68C" />
+                    <SolidColorBrush x:Key="AppHoverBrush" Color="#12FFFFFF" />
+                    <SolidColorBrush x:Key="AppButtonHoverBrush" Color="#242434" />
+                    <SolidColorBrush x:Key="AppButtonPressedBrush" Color="#1E1E2C" />
+                    <LinearGradientBrush x:Key="AppHeroBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#337C5CFF" Offset="0" />
+                        <GradientStop Color="#007C5CFF" Offset="1" />
+                    </LinearGradientBrush>
+                    <Color x:Key="SystemAccentColor">#7C5CFF</Color>
+                    <Color x:Key="SystemAccentColorDark1">#6E4EF5</Color>
+                    <Color x:Key="SystemAccentColorDark2">#5A3ED6</Color>
+                    <Color x:Key="SystemAccentColorDark3">#4630A8</Color>
+                    <Color x:Key="SystemAccentColorLight1">#917AFF</Color>
+                    <Color x:Key="SystemAccentColorLight2">#A99BFF</Color>
+                    <Color x:Key="SystemAccentColorLight3">#CFC6FF</Color>
+                </ResourceDictionary>
 
-        <!-- Icon geometries (Material-style, 24x24 viewbox) -->
-        <StreamGeometry x:Key="IconLock">M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5 5 5 0 0 1 5 5v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z</StreamGeometry>
-        <StreamGeometry x:Key="IconKey">M7 14a2 2 0 0 1-2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 1-2 2m5.65-4A5.99 5.99 0 0 0 7 6a6 6 0 0 0-6 6 6 6 0 0 0 6 6 5.99 5.99 0 0 0 5.65-4H17v4h4v-4h2v-4H12.65z</StreamGeometry>
-        <StreamGeometry x:Key="IconCopy">M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1z</StreamGeometry>
-        <StreamGeometry x:Key="IconEye">M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m0-4.5c5 0 9.27 3.11 11 7.5-1.73 4.39-6 7.5-11 7.5S2.73 16.39 1 12c1.73-4.39 6-7.5 11-7.5M3.18 12a9.821 9.821 0 0 0 17.64 0 9.821 9.821 0 0 0-17.64 0z</StreamGeometry>
-        <StreamGeometry x:Key="IconRefresh">M17.65 6.35A7.958 7.958 0 0 0 12 4a8 8 0 0 0-8 8 8 8 0 0 0 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</StreamGeometry>
-        <StreamGeometry x:Key="IconTrash">M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12z</StreamGeometry>
-        <StreamGeometry x:Key="IconSave">M15 9H5V5h10m-3 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3m3-16H5c-1.11 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z</StreamGeometry>
-        <StreamGeometry x:Key="IconSearch">M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z</StreamGeometry>
-        <StreamGeometry x:Key="IconFolder">M10 4H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z</StreamGeometry>
-        <StreamGeometry x:Key="IconEdit">M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.82z</StreamGeometry>
-        <StreamGeometry x:Key="IconCheck">M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z</StreamGeometry>
-        <StreamGeometry x:Key="IconClose">M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z</StreamGeometry>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <!-- Theme-independent: navigation rail, avatar gradient, text on dark panels -->
+            <LinearGradientBrush x:Key="AppRailBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#0E0B24" Offset="0" />
+                <GradientStop Color="#2B1B6E" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="AppAvatarBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#8B6CFF" Offset="0" />
+                <GradientStop Color="#E056C4" Offset="1" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="AppRailTextBrush" Color="#CFC8F0" />
+            <SolidColorBrush x:Key="AppRailTextMutedBrush" Color="#9A92C4" />
+
+            <!-- Icon geometries (Material-style, 24x24 viewbox) -->
+            <StreamGeometry x:Key="IconLock">M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5 5 5 0 0 1 5 5v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z</StreamGeometry>
+            <StreamGeometry x:Key="IconKey">M7 14a2 2 0 0 1-2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 1-2 2m5.65-4A5.99 5.99 0 0 0 7 6a6 6 0 0 0-6 6 6 6 0 0 0 6 6 5.99 5.99 0 0 0 5.65-4H17v4h4v-4h2v-4H12.65z</StreamGeometry>
+            <StreamGeometry x:Key="IconCopy">M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12V1z</StreamGeometry>
+            <StreamGeometry x:Key="IconEye">M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m0-4.5c5 0 9.27 3.11 11 7.5-1.73 4.39-6 7.5-11 7.5S2.73 16.39 1 12c1.73-4.39 6-7.5 11-7.5M3.18 12a9.821 9.821 0 0 0 17.64 0 9.821 9.821 0 0 0-17.64 0z</StreamGeometry>
+            <StreamGeometry x:Key="IconRefresh">M17.65 6.35A7.958 7.958 0 0 0 12 4a8 8 0 0 0-8 8 8 8 0 0 0 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18a6 6 0 0 1-6-6 6 6 0 0 1 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</StreamGeometry>
+            <StreamGeometry x:Key="IconTrash">M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12z</StreamGeometry>
+            <StreamGeometry x:Key="IconSave">M15 9H5V5h10m-3 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3m3-16H5c-1.11 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z</StreamGeometry>
+            <StreamGeometry x:Key="IconSearch">M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z</StreamGeometry>
+            <StreamGeometry x:Key="IconFolder">M10 4H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z</StreamGeometry>
+            <StreamGeometry x:Key="IconEdit">M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.82z</StreamGeometry>
+            <StreamGeometry x:Key="IconCheck">M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z</StreamGeometry>
+            <StreamGeometry x:Key="IconClose">M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z</StreamGeometry>
+            <StreamGeometry x:Key="IconPlus">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</StreamGeometry>
+            <StreamGeometry x:Key="IconChevronDown">M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z</StreamGeometry>
+            <StreamGeometry x:Key="IconChevronRight">M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z</StreamGeometry>
+            <StreamGeometry x:Key="IconSettings">M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1.01a.5.5 0 0 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z</StreamGeometry>
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
@@ -55,89 +121,287 @@
 
         <!-- Window base -->
         <Style Selector="Window">
-            <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Inter, sans-serif" />
         </Style>
 
-        <!-- Rounded, larger inputs -->
+        <!-- Type scale -->
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextMutedBrush}" />
+        </Style>
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="{DynamicResource AppTextMutedBrush}" />
+        </Style>
+
+        <!-- Surfaces -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            
+        </Style>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
+        </Style>
+        <Style Selector="Border.chip">
+            <Setter Property="Background" Value="{DynamicResource AppAccentSubtleBrush}" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="8,2" />
+        </Style>
+
+        <!-- Inputs -->
         <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource AppInputBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrongBrush}" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="10,8" />
-            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="MinHeight" Value="34" />
+        </Style>
+        <!-- Viewing mode: fields lose their frame but stay selectable -->
+        <Style Selector="StackPanel.viewing TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="34" />
         </Style>
 
-        <!-- Buttons: rounded, roomy -->
+        <!-- Buttons -->
         <Style Selector="Button">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrongBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="14,9" />
-            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="MinHeight" Value="34" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppButtonHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrongBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppButtonPressedBrush}" />
         </Style>
 
-        <!-- Compact icon-only buttons (copy/eye/generate/rename); overrides the roomy default -->
-        <Style Selector="Button.icon">
-            <Setter Property="Padding" Value="6" />
-            <Setter Property="MinWidth" Value="30" />
-            <Setter Property="MinHeight" Value="30" />
-            <Setter Property="CornerRadius" Value="7" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-
-        <!-- Accent (primary) button -->
+        <!-- Primary -->
         <Style Selector="Button.accent">
-            <Setter Property="Background" Value="{StaticResource AppAccentBrush}" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <Style Selector="Button.accent /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
         <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AppAccentHoverBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppAccentHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentHoverBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.accent:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AppAccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
 
-        <!-- Danger (destructive) button -->
+        <!-- Destructive: solid (confirmation) and soft (inline) -->
         <Style Selector="Button.danger">
-            <Setter Property="Background" Value="#E5484D" />
+            <Setter Property="Background" Value="{DynamicResource AppDangerBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppDangerBrush}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#F0575C" />
+            <Setter Property="Background" Value="{DynamicResource AppDangerBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppDangerBrush}" />
             <Setter Property="Foreground" Value="White" />
+            <Setter Property="Opacity" Value="0.88" />
         </Style>
-        <Style Selector="Button.danger:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#CC3E42" />
-            <Setter Property="Foreground" Value="White" />
+        <Style Selector="Button.dangersoft">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource AppDangerBrush}" />
+        </Style>
+        <Style Selector="Button.dangersoft:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppDangerSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource AppDangerBrush}" />
         </Style>
 
-        <!-- ListBox items: rounded rows with a soft selection -->
-        <Style Selector="ListBoxItem">
+        <!-- Quiet button: no frame until hovered -->
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+        </Style>
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.ghost:disabled /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.35" />
+        </Style>
+
+        <!-- Compact icon-only buttons -->
+        <Style Selector="Button.icon">
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="MinHeight" Value="30" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Margin" Value="4,2" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
-        <!-- Entry rows inside folder groups (clickable, flat, with selection highlight) -->
+        <!-- Navigation rail buttons (always on the dark rail) -->
+        <Style Selector="Button.rail">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AppRailTextBrush}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="0,8" />
+            <Setter Property="Width" Value="60" />
+            <Setter Property="MinHeight" Value="54" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.rail:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#22FFFFFF" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.rail:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2EFFFFFF" />
+        </Style>
+        <Style Selector="Button.rail.primary">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.rail.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentHoverBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Entry rows in the list -->
         <Style Selector="Button.entryrow">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="8,6" />
             <Setter Property="Margin" Value="0,1" />
+            <Setter Property="MinHeight" Value="46" />
+        </Style>
+        <Style Selector="Button.entryrow.tile">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+            <Setter Property="CornerRadius" Value="14" />
+        </Style>
+        <Style Selector="Button.entryrow.tile /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button.entryrow:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#22FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
         <Style Selector="Button.entryrow.selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AppAccentBrush}" />
-            <Setter Property="TextElement.Foreground" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource AppAccentSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBorderBrush}" />
         </Style>
 
-        <!-- ListBox surface -->
-        <Style Selector="ListBox">
+        <Style Selector="Button.entryrow.tile.selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBorderBrush}" />
+        </Style>
+
+        <!-- Folder header (expand / collapse) -->
+        <Style Selector="ToggleButton.folderhead">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.folderhead /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ToggleButton.folderhead:checked /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.folderhead:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.folderhead:checked:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+        </Style>
+        <!-- Folder filter chips -->
+        <Style Selector="ListBox.chips">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.chips ListBoxItem">
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="Margin" Value="0,0,6,4" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+        </Style>
+        <Style Selector="ListBox.chips ListBoxItem /template/ ContentPresenter">
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}" />
+        </Style>
+        <Style Selector="ListBox.chips ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppButtonHoverBrush}" />
+        </Style>
+        <Style Selector="ListBox.chips ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="ListBox.chips ListBoxItem:selected:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentHoverBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <!-- Resizable divider between list and detail -->
+        <Style Selector="GridSplitter.splitter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Margin" Value="3,60,3,60" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Cursor" Value="SizeWestEast" />
+        </Style>
+        <Style Selector="GridSplitter.splitter:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBorderBrush}" />
         </Style>
     </Application.Styles>
 </Application>

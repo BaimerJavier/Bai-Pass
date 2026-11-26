@@ -58,6 +58,94 @@ public partial class VaultViewModel : ViewModelBase
 
     [ObservableProperty] public partial int SelectedClipboardSeconds { get; set; }
 
+    /// <summary>Theme choices shown in Ajustes (display labels; stored as System/Light/Dark).</summary>
+    public string[] ThemeOptions { get; } = { "Sistema", "Claro", "Oscuro" };
+
+    [ObservableProperty] public partial string SelectedThemeLabel { get; set; } = "Sistema";
+
+    private static string ThemeCode(string label) => label switch
+    {
+        "Claro" => "Light",
+        "Oscuro" => "Dark",
+        _ => "System",
+    };
+
+    private static string ThemeLabel(string code) => code switch
+    {
+        "Light" => "Claro",
+        "Dark" => "Oscuro",
+        _ => "Sistema",
+    };
+
+    partial void OnSelectedThemeLabelChanged(string value)
+    {
+        string code = ThemeCode(value);
+        _settings.Theme = code;
+        _settingsService.Save(_settings);
+        ThemeService.Apply(code);
+    }
+
+    /// <summary>Flat, filtered and sorted entries for the table / mosaic / search views.</summary>
+    public ObservableCollection<PasswordEntry> FlatEntries { get; } = new();
+
+    /// <summary>Folder filter chips ("Todas" + each folder).</summary>
+    public ObservableCollection<string> FolderFilters { get; } = new();
+
+    public const string AllFolders = "Todas";
+
+    [ObservableProperty] public partial string SelectedFolderFilter { get; set; } = AllFolders;
+
+    partial void OnSelectedFolderFilterChanged(string value)
+    {
+        if (_refreshing || string.IsNullOrEmpty(value)) return;
+        RefreshGroups();
+    }
+
+    private bool _refreshing;
+
+    /// <summary>Layout choices shown in Ajustes (Tabla / Mosaico / Buscador).</summary>
+    public string[] ViewModeOptions { get; } = { "Tabla", "Mosaico", "Buscador" };
+
+    [ObservableProperty] public partial string SelectedViewMode { get; set; } = "Tabla";
+
+    public bool IsTableView => SelectedViewMode == "Tabla";
+    public bool IsGridView => SelectedViewMode == "Mosaico";
+    public bool IsPaletteView => SelectedViewMode == "Buscador";
+
+    partial void OnSelectedViewModeChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsTableView));
+        OnPropertyChanged(nameof(IsGridView));
+        OnPropertyChanged(nameof(IsPaletteView));
+        if (_settings is null) return;
+        _settings.ViewMode = value;
+        _settingsService.Save(_settings);
+    }
+
+    /// <summary>Closes the detail drawer.</summary>
+    [RelayCommand]
+    private void CloseDetail() => SelectEntry(null);
+
+    /// <summary>Copies a specific entry's password (used by the quick buttons in rows and tiles).</summary>
+    [RelayCommand]
+    private async Task CopyEntryPassword(PasswordEntry? entry)
+    {
+        if (entry is null) return;
+        _session.RegisterActivity();
+        int seconds = _settings.ClipboardClearSeconds;
+        await ClipboardService.CopyAsync(entry.Password, seconds);
+        Flash($"Contrasena copiada (se borra en {seconds} s).");
+    }
+
+    [RelayCommand]
+    private async Task CopyEntryUsername(PasswordEntry? entry)
+    {
+        if (entry is null) return;
+        _session.RegisterActivity();
+        await ClipboardService.CopyAsync(entry.Username, clearAfterSeconds: 60);
+        Flash("Usuario copiado.");
+    }
+
     /// <summary>Distinct folder names, for the "Carpeta" autocomplete in the detail panel.</summary>
     public ObservableCollection<string> FolderNames { get; } = new();
 
@@ -68,6 +156,11 @@ public partial class VaultViewModel : ViewModelBase
 
     /// <summary>Whether the detail panel's fields are unlocked for editing (off by default).</summary>
     [ObservableProperty] public partial bool IsEditing { get; set; }
+
+    /// <summary>Inverse of <see cref="IsEditing"/>: fields stay selectable/copyable but read-only.</summary>
+    public bool IsReadOnlyMode => !IsEditing;
+
+    partial void OnIsEditingChanged(bool value) => OnPropertyChanged(nameof(IsReadOnlyMode));
 
     // Two-step delete confirmation state.
     [ObservableProperty] public partial bool DeleteStep1Visible { get; set; }
@@ -90,6 +183,8 @@ public partial class VaultViewModel : ViewModelBase
         _all = _session.Entries;
         SelectedAutoLockMinutes = settings.AutoLockMinutes;
         SelectedClipboardSeconds = settings.ClipboardClearSeconds;
+        SelectedThemeLabel = ThemeLabel(settings.Theme);
+        SelectedViewMode = settings.ViewMode is "Tabla" or "Mosaico" or "Buscador" ? settings.ViewMode : "Tabla";
         RefreshGroups();
     }
 
@@ -211,6 +306,26 @@ public partial class VaultViewModel : ViewModelBase
             .GroupBy(e => string.IsNullOrWhiteSpace(e.Folder) ? UngroupedName : e.Folder.Trim())
             .OrderBy(g => g.Key == UngroupedName ? 1 : 0)          // named folders first
             .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
+
+        _refreshing = true;
+        var folders = _all.Select(e => string.IsNullOrWhiteSpace(e.Folder) ? UngroupedName : e.Folder.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(f => f == UngroupedName ? 1 : 0).ThenBy(f => f, StringComparer.OrdinalIgnoreCase).ToList();
+        string keep = string.IsNullOrEmpty(SelectedFolderFilter) ? AllFolders : SelectedFolderFilter;
+        if (keep != AllFolders && !folders.Contains(keep, StringComparer.OrdinalIgnoreCase))
+            keep = AllFolders;
+        FolderFilters.Clear();
+        FolderFilters.Add(AllFolders);
+        foreach (var f in folders) FolderFilters.Add(f);
+        SelectedFolderFilter = keep; // the ListBox nulls its selection when items are cleared
+        _refreshing = false;
+
+        FlatEntries.Clear();
+        foreach (var e in query
+            .Where(e => keep == AllFolders ||
+                string.Equals(string.IsNullOrWhiteSpace(e.Folder) ? UngroupedName : e.Folder.Trim(), keep, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(e => e.DisplayName, StringComparer.OrdinalIgnoreCase))
+            FlatEntries.Add(e);
 
         Groups.Clear();
         foreach (var g in grouped)

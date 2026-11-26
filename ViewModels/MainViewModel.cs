@@ -23,6 +23,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         _settings = _settingsService.Load();
+        ThemeService.Apply(_settings.Theme);
 
         // A configured custom location takes precedence over the per-user default.
         string vaultPath = string.IsNullOrWhiteSpace(_settings.VaultPath)

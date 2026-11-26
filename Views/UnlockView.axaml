@@ -3,56 +3,79 @@
              xmlns:vm="using:PasswordManager.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="640"
              x:Class="PasswordManager.Views.UnlockView"
              x:DataType="vm:UnlockViewModel">
 
-    <Border Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Border Background="{StaticResource AppSurfaceBrush}"
-                BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
-                CornerRadius="16" Padding="36,32">
-        <StackPanel Width="360" Spacing="14"
-                    HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Grid ColumnDefinitions="360,*" Background="{DynamicResource AppBackgroundBrush}">
 
-            <Border Background="{StaticResource AppAccentBrush}" CornerRadius="18"
-                    Width="72" Height="72" HorizontalAlignment="Center">
-                <PathIcon Data="{StaticResource IconKey}" Width="36" Height="36" Foreground="White" />
-            </Border>
+        <!-- Brand panel -->
+        <Border Grid.Column="0" Background="{DynamicResource AppRailBrush}" Padding="36">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Border Width="44" Height="44" CornerRadius="13" Background="{DynamicResource AppAvatarBrush}">
+                        <PathIcon Data="{StaticResource IconKey}" Width="22" Height="22" Foreground="White" />
+                    </Border>
+                    <TextBlock Text="Bai-Pass" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"
+                               Foreground="White" />
+                </StackPanel>
 
-            <TextBlock Text="Bai-Pass" FontSize="26" FontWeight="Bold"
-                       HorizontalAlignment="Center" Margin="0,4,0,0" />
+                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="14">
+                    <TextBlock Text="Tus credenciales, bajo llave." FontSize="24" FontWeight="Bold"
+                               TextWrapping="Wrap" Foreground="White" />
+                    <TextBlock Text="Gestor de contrasenas local, rapido y seguro para tu equipo."
+                               TextWrapping="Wrap" Foreground="{DynamicResource AppRailTextBrush}" />
+                </StackPanel>
 
-            <TextBlock Text="{Binding Title}"
-                       FontSize="22" FontWeight="SemiBold"
-                       HorizontalAlignment="Center" TextAlignment="Center" />
-
-            <TextBlock Text="Tu contrasena maestra cifra toda la boveda. Si la olvidas, no hay forma de recuperar los datos."
-                       IsVisible="{Binding IsCreateMode}"
-                       TextWrapping="Wrap" Opacity="0.7" FontSize="12"
-                       TextAlignment="Center" />
-
-            <TextBox x:Name="MasterBox"
-                     PlaceholderText="Contrasena maestra"
-                     PasswordChar="●"
-                     Text="{Binding MasterPassword}" />
-
-            <TextBox PlaceholderText="Confirmar contrasena"
-                     PasswordChar="●"
-                     IsVisible="{Binding IsCreateMode}"
-                     Text="{Binding ConfirmPassword}" />
-
-            <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="#E53935"
-                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                       TextWrapping="Wrap" />
-
-            <Button Content="{Binding ActionText}"
-                    Command="{Binding SubmitCommand}"
-                    IsDefault="True"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Classes="accent" />
-        </StackPanel>
+                <StackPanel Grid.Row="2" Spacing="9">
+                    <StackPanel Orientation="Horizontal" Spacing="9">
+                        <PathIcon Data="{StaticResource IconLock}" Width="13" Height="13" Foreground="{DynamicResource AppRailTextBrush}" />
+                        <TextBlock Text="Cifrado AES-256-GCM" Foreground="{DynamicResource AppRailTextBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="9">
+                        <PathIcon Data="{StaticResource IconKey}" Width="13" Height="13" Foreground="{DynamicResource AppRailTextBrush}" />
+                        <TextBlock Text="Derivacion de llave Argon2id" Foreground="{DynamicResource AppRailTextBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="9">
+                        <PathIcon Data="{StaticResource IconFolder}" Width="13" Height="13" Foreground="{DynamicResource AppRailTextBrush}" />
+                        <TextBlock Text="Datos solo en este equipo" Foreground="{DynamicResource AppRailTextBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
         </Border>
-    </Border>
+
+        <!-- Form panel -->
+        <Grid Grid.Column="1">
+            <StackPanel Width="320" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+
+                <TextBlock Text="{Binding Title}" Classes="title" />
+
+                <TextBlock Text="Tu contrasena maestra cifra toda la boveda. Si la olvidas, no hay forma de recuperar los datos."
+                           IsVisible="{Binding IsCreateMode}"
+                           TextWrapping="Wrap" Classes="muted" />
+
+                <TextBox x:Name="MasterBox" Margin="0,8,0,0"
+                         PlaceholderText="Contrasena maestra"
+                         PasswordChar="●"
+                         Text="{Binding MasterPassword}" />
+
+                <TextBox PlaceholderText="Confirmar contrasena"
+                         PasswordChar="●"
+                         IsVisible="{Binding IsCreateMode}"
+                         Text="{Binding ConfirmPassword}" />
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="{DynamicResource AppDangerBrush}"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           TextWrapping="Wrap" />
+
+                <Button Content="{Binding ActionText}"
+                        Command="{Binding SubmitCommand}"
+                        IsDefault="True" Margin="0,4,0,0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Classes="accent" />
+            </StackPanel>
+        </Grid>
+    </Grid>
 </UserControl>

@@ -30,4 +30,21 @@ public partial class PasswordEntry : ObservableObject
         !string.IsNullOrWhiteSpace(Title) ? Title
         : !string.IsNullOrWhiteSpace(Username) ? Username
         : "(sin titulo)";
+
+    /// <summary>First letter of <see cref="DisplayName"/>, shown in the list avatar.</summary>
+    [JsonIgnore]
+    public string Initial =>
+        DisplayName.Length > 0 && char.IsLetterOrDigit(DisplayName[0])
+            ? DisplayName[..1].ToUpperInvariant()
+            : "#";
+
+    // Keep the name/avatar in sync while the user types the title or username.
+    partial void OnTitleChanged(string value) => RaiseNameChanged();
+    partial void OnUsernameChanged(string value) => RaiseNameChanged();
+
+    private void RaiseNameChanged()
+    {
+        OnPropertyChanged(nameof(DisplayName));
+        OnPropertyChanged(nameof(Initial));
+    }
 }

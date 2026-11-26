@@ -4,339 +4,523 @@
              xmlns:model="using:PasswordManager.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="660"
              x:Class="PasswordManager.Views.VaultView"
              x:DataType="vm:VaultViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+    <Grid>
+        <Grid x:Name="RootGrid" RowDefinitions="56,Auto,*">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="300" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="0" MinWidth="0" MaxWidth="1100" />
+            </Grid.ColumnDefinitions>
 
-        <!-- Top bar -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                <Border Background="{StaticResource AppAccentBrush}" CornerRadius="9" Width="34" Height="34" VerticalAlignment="Center">
-                    <PathIcon Data="{StaticResource IconKey}" Width="18" Height="18" Foreground="White" />
-                </Border>
-                <TextBlock Text="Bai-Pass" FontSize="19" FontWeight="Bold" VerticalAlignment="Center" />
-                <Border Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="10" Padding="9,2" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding EntryCount}" FontSize="12" Foreground="{StaticResource AppAccentHoverBrush}" FontWeight="SemiBold" />
-                </Border>
-            </StackPanel>
-
-            <TextBox Grid.Column="1" PlaceholderText="Buscar..." Margin="16,0"
-                     Text="{Binding SearchText}" MaxWidth="360" HorizontalAlignment="Stretch">
-                <TextBox.InnerLeftContent>
-                    <PathIcon Data="{StaticResource IconSearch}" Width="15" Height="15"
-                              Margin="10,0,0,0" Foreground="{StaticResource AppTextMutedBrush}" />
-                </TextBox.InnerLeftContent>
-            </TextBox>
-
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                            ToolTip.Tip="Bloquear automaticamente tras este tiempo de inactividad">
-                    <PathIcon Data="{StaticResource IconLock}" Width="13" Height="13"
-                              Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="Auto-bloqueo:" FontSize="12" Opacity="0.7" VerticalAlignment="Center" />
-                    <ComboBox ItemsSource="{Binding AutoLockOptions}"
-                              SelectedItem="{Binding SelectedAutoLockMinutes}"
-                              MinWidth="86" VerticalAlignment="Center">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding StringFormat='{}{0} min'}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                            ToolTip.Tip="Borrar la contrasena del portapapeles tras copiarla">
-                    <PathIcon Data="{StaticResource IconCopy}" Width="13" Height="13"
-                              Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="Portapapeles:" FontSize="12" Opacity="0.7" VerticalAlignment="Center" />
-                    <ComboBox ItemsSource="{Binding ClipboardOptions}"
-                              SelectedItem="{Binding SelectedClipboardSeconds}"
-                              MinWidth="80" VerticalAlignment="Center">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding StringFormat='{}{0} s'}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-
-                <Button ToolTip.Tip="Ubicacion del archivo vault.dat">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15" />
-                        <TextBlock Text="Boveda" VerticalAlignment="Center" />
+            <!-- ============ Top bar: brand, search, actions ============ -->
+            <Border Grid.Row="0" Grid.ColumnSpan="3" Background="Transparent">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Border Width="32" Height="32" CornerRadius="9" Background="{DynamicResource AppAvatarBrush}">
+                            <PathIcon Data="{StaticResource IconKey}" Width="16" Height="16" Foreground="White" />
+                        </Border>
+                        <TextBlock Text="Bai-Pass" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}" />
+                        <Border Classes="chip" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding EntryCount}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppAccentTextBrush}" />
+                        </Border>
                     </StackPanel>
-                    <Button.Flyout>
-                        <MenuFlyout Placement="BottomEdgeAlignedRight">
-                            <MenuItem Header="Abrir carpeta" Command="{Binding OpenVaultFolderCommand}">
-                                <MenuItem.Icon>
-                                    <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Header="Cambiar ubicacion..." Command="{Binding ChangeVaultLocationCommand}">
-                                <MenuItem.Icon>
-                                    <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
 
-                <Button Command="{Binding LockCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <PathIcon Data="{StaticResource IconLock}" Width="15" Height="15" />
-                        <TextBlock Text="Bloquear" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Margin="18,0" MaxWidth="420" VerticalAlignment="Center" CornerRadius="20" IsVisible="{Binding !IsPaletteView}"
+                             PlaceholderText="Buscar en la boveda..." Text="{Binding SearchText}">
+                        <TextBox.InnerLeftContent>
+                            <PathIcon Data="{StaticResource IconSearch}" Width="14" Height="14"
+                                      Margin="11,0,0,0" Foreground="{DynamicResource AppTextMutedBrush}" />
+                        </TextBox.InnerLeftContent>
+                    </TextBox>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Classes="accent" Command="{Binding AddEntryCommand}" ToolTip.Tip="Crear una entrada nueva">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <PathIcon Data="{StaticResource IconPlus}" Width="13" Height="13" />
+                                <TextBlock Text="Nueva" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="Ajustes y ubicacion de la boveda">
+                            <PathIcon Data="{StaticResource IconSettings}" Width="16" Height="16" />
+                            <Button.Flyout>
+<Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Width="256" Spacing="12">
+                                        <TextBlock Text="Ajustes" Classes="heading" />
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Vista" Classes="label" />
+                                            <ComboBox ItemsSource="{Binding ViewModeOptions}"
+                                                      SelectedItem="{Binding SelectedViewMode}"
+                                                      HorizontalAlignment="Stretch" />
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Tema" Classes="label" />
+                                            <ComboBox ItemsSource="{Binding ThemeOptions}"
+                                                      SelectedItem="{Binding SelectedThemeLabel}"
+                                                      HorizontalAlignment="Stretch" />
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Bloqueo automatico por inactividad" Classes="label" />
+                                            <ComboBox ItemsSource="{Binding AutoLockOptions}"
+                                                      SelectedItem="{Binding SelectedAutoLockMinutes}"
+                                                      HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding StringFormat='{}{0} min'}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Borrar portapapeles tras copiar" Classes="label" />
+                                            <ComboBox ItemsSource="{Binding ClipboardOptions}"
+                                                      SelectedItem="{Binding SelectedClipboardSeconds}"
+                                                      HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding StringFormat='{}{0} s'}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <Border Classes="divider" />
+                                        <TextBlock Text="ARCHIVO DE LA BOVEDA" Classes="section" />
+
+                                        <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                Command="{Binding OpenVaultFolderCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                                                <TextBlock Text="Abrir carpeta" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                Command="{Binding ChangeVaultLocationCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14" />
+                                                <TextBlock Text="Cambiar ubicacion..." VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Classes="icon ghost" Command="{Binding LockCommand}" ToolTip.Tip="Bloquear la boveda ahora">
+                            <PathIcon Data="{StaticResource IconLock}" Width="16" Height="16" />
+                        </Button>
                     </StackPanel>
-                </Button>
-            </StackPanel>
-        </Grid>
+                </Grid>
+            </Border>
 
-        <!-- Main area: list + detail -->
-        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+            <!-- Folder filter chips -->
+            <Border Grid.Row="1" Grid.ColumnSpan="3" Background="Transparent" Padding="16,0,16,2">
+                <ListBox Classes="chips" ItemsSource="{Binding FolderFilters}"
+                         SelectedItem="{Binding SelectedFolderFilter}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+            </Border>
 
-            <!-- List -->
-            <Grid Grid.Column="0" RowDefinitions="*,Auto" Margin="0,0,10,0">
-                <Border Grid.Row="0" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="6">
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding Groups}">
+            <Border Grid.Row="2" Grid.Column="0" Margin="16,8,0,16" CornerRadius="18" ClipToBounds="True"
+                    Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
+            <Panel>
+                <!-- ===== View A: table ===== -->
+                <Grid RowDefinitions="Auto,*" IsVisible="{Binding IsTableView}" Margin="16,12,16,0">
+                    <Grid Grid.Row="0" ColumnDefinitions="2.2*,2*,1.2*,80" Margin="14,0,26,6">
+                        <TextBlock Text="TITULO" Classes="section" />
+                        <TextBlock Grid.Column="1" Text="USUARIO" Classes="section" />
+                        <TextBlock Grid.Column="2" Text="CARPETA" Classes="section" />
+                    </Grid>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding FlatEntries}" Margin="0,0,12,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:FolderGroup">
-                                    <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                              Margin="0,0,0,4" Padding="0" HorizontalAlignment="Stretch">
-                                        <Expander.Header>
-                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" VerticalAlignment="Center">
-                                                <PathIcon Grid.Column="0" Data="{StaticResource IconFolder}" Width="15" Height="15"
-                                                          Foreground="{StaticResource AppAccentHoverBrush}" VerticalAlignment="Center" />
-
-                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"
-                                                           VerticalAlignment="Center" Margin="8,0,0,0"
-                                                           IsVisible="{Binding !IsRenaming}" />
-                                                <TextBox Grid.Column="1" Text="{Binding EditingName}" IsVisible="{Binding IsRenaming}"
-                                                         Margin="8,0,0,0" MinHeight="26" Padding="6,2" FontSize="13" />
-
-                                                <Border Grid.Column="2" Background="{StaticResource AppSurfaceAltBrush}" CornerRadius="9"
-                                                        Padding="7,1" VerticalAlignment="Center" Margin="8,0,0,0"
-                                                        IsVisible="{Binding !IsRenaming}">
-                                                    <TextBlock Text="{Binding Count}" FontSize="11" Opacity="0.8" />
+                                <DataTemplate x:DataType="model:PasswordEntry">
+                                    <Button Classes="entryrow" Classes.selected="{Binding IsSelected}"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Margin="0,0,0,3" Padding="14,6"
+                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).SelectEntryCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="2.2*,2*,1.2*,80">
+                                            <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <Border Width="26" Height="26" CornerRadius="8" Background="{DynamicResource AppAvatarBrush}">
+                                                    <TextBlock Text="{Binding Initial}" FontSize="11.5" FontWeight="Bold" Foreground="White"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-
-                                                <Button Grid.Column="3" Classes="icon" Margin="6,0,0,0" IsVisible="{Binding !IsRenaming}"
-                                                        ToolTip.Tip="Renombrar carpeta"
-                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).BeginRenameFolderCommand}"
-                                                        CommandParameter="{Binding}">
-                                                    <PathIcon Data="{StaticResource IconEdit}" Width="13" Height="13" />
-                                                </Button>
-
-                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" Margin="6,0,0,0"
-                                                            IsVisible="{Binding IsRenaming}">
-                                                    <Button Classes="icon accent" ToolTip.Tip="Confirmar"
-                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CommitRenameFolderCommand}"
-                                                            CommandParameter="{Binding}">
-                                                        <PathIcon Data="{StaticResource IconCheck}" Width="13" Height="13" />
-                                                    </Button>
-                                                    <Button Classes="icon" ToolTip.Tip="Cancelar"
-                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CancelRenameFolderCommand}"
-                                                            CommandParameter="{Binding}">
-                                                        <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
-                                                    </Button>
-                                                </StackPanel>
+                                                <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis" />
                                             </Grid>
-                                        </Expander.Header>
-
-                                        <ItemsControl ItemsSource="{Binding Entries}" Margin="6,2,0,2">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="model:PasswordEntry">
-                                                    <Button Classes="entryrow"
-                                                            Classes.selected="{Binding IsSelected}"
-                                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).SelectEntryCommand}"
-                                                            CommandParameter="{Binding}">
-                                                        <StackPanel Spacing="2">
-                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                                                            <TextBlock Text="{Binding Username}" Opacity="0.6" FontSize="12"
-                                                                       IsVisible="{Binding Username, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Expander>
+                                            <TextBlock Grid.Column="1" Text="{Binding Username}" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource AppTextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Folder}" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource AppAccentTextBrush}" TextTrimming="CharacterEllipsis" />
+                                                                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right">
+                                                <Button Classes="icon ghost" ToolTip.Tip="Copiar usuario"
+                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryUsernameCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <PathIcon Data="{StaticResource IconCopy}" Width="14" Height="14" />
+                                                </Button>
+                                                <Button Classes="icon ghost" ToolTip.Tip="Copiar contrasena"
+                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryPasswordCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <PathIcon Data="{StaticResource IconKey}" Width="14" Height="14"
+                                                              Foreground="{DynamicResource AppAccentTextBrush}" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                </Border>
-                <Button Grid.Row="1" Content="+ Agregar entrada"
-                        Command="{Binding AddEntryCommand}"
-                        Margin="0,8,0,0"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Classes="accent" />
-            </Grid>
+                </Grid>
+<!-- ===== View B: mosaic ===== -->
+                <ScrollViewer IsVisible="{Binding IsGridView}" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding FlatEntries}" Margin="16,14,24,16">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="model:PasswordEntry">
+                                <Button Classes="entryrow tile" Classes.selected="{Binding IsSelected}"
+                                        Width="212" Margin="0,0,10,10" Padding="14,12" HorizontalContentAlignment="Stretch"
+                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).SelectEntryCommand}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="10">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Width="42" Height="42" CornerRadius="12" Background="{DynamicResource AppAvatarBrush}">
+                                                <TextBlock Text="{Binding Initial}" FontSize="17" FontWeight="Bold" Foreground="White"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <Border Grid.Column="1" Classes="chip" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    IsVisible="{Binding Folder, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                <TextBlock Text="{Binding Folder}" FontSize="10.5" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource AppAccentTextBrush}" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Spacing="1">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="14" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Username}" Classes="label" TextTrimming="CharacterEllipsis" MinHeight="16" />
+                                        </StackPanel>
+                                        <Grid ColumnDefinitions="*,*">
+                                            <Button Classes="ghost" Margin="0,0,3,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                                    Padding="4,5" MinHeight="0"
+                                                    Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryUsernameCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="Usuario" FontSize="11.5" />
+                                            </Button>
+                                            <Button Grid.Column="1" Classes="accent" Margin="3,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                                    Padding="4,5" MinHeight="0"
+                                                    Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryPasswordCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="Clave" FontSize="11.5" />
+                                            </Button>
+                                        </Grid>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+<!-- ===== View C: search palette ===== -->
+                <Grid RowDefinitions="Auto,*" IsVisible="{Binding IsPaletteView}">
+                    <StackPanel Grid.Row="0" MaxWidth="640" Margin="24,30,24,12" Spacing="6">
+                        <TextBox FontSize="17" MinHeight="52" Padding="14,12" CornerRadius="14"
+                                 PlaceholderText="Que credencial buscas?" Text="{Binding SearchText}">
+                            <TextBox.InnerLeftContent>
+                                <PathIcon Data="{StaticResource IconSearch}" Width="18" Height="18"
+                                          Margin="16,0,0,0" Foreground="{DynamicResource AppAccentBrush}" />
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+                        <TextBlock Text="Escribe para filtrar y copia usuario o clave con un clic." Classes="muted"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding FlatEntries}" MaxWidth="640" Margin="24,0,34,20">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="model:PasswordEntry">
+                                    <Button Classes="entryrow" Classes.selected="{Binding IsSelected}"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Margin="0,0,0,4" Padding="12,9"
+                                            Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).SelectEntryCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Width="36" Height="36" CornerRadius="18" Background="{DynamicResource AppAvatarBrush}" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Initial}" FontSize="14" FontWeight="Bold" Foreground="White"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13.5" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Username}" Classes="label" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <Button Classes="ghost" Padding="10,5" MinHeight="0"
+                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryUsernameCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <TextBlock Text="Usuario" FontSize="12" />
+                                                </Button>
+                                                <Button Classes="accent" Padding="10,5" MinHeight="0"
+                                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyEntryPasswordCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <TextBlock Text="Clave" FontSize="12" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Panel>
+            </Border>
 
-            <!-- Detail -->
-            <Border Grid.Column="1" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
+            <!-- ===== Detail drawer ===== -->
+            <GridSplitter Grid.Row="2" Grid.Column="1" Classes="splitter" ResizeDirection="Columns"
+                          ToolTip.Tip="Arrastra para cambiar el tamano" IsVisible="{Binding HasSelection}" />
 
-                <!-- Placeholder when nothing selected -->
+            <Border Grid.Row="2" Grid.Column="2" IsVisible="{Binding HasSelection}"
+                    Margin="0,8,16,16" CornerRadius="18" ClipToBounds="True"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
                 <Panel>
-                    <TextBlock Text="Selecciona una entrada o crea una nueva."
-                               Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center"
-                               IsVisible="{Binding !HasSelection}" />
+                    <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding HasSelection}">
 
-                    <ScrollViewer IsVisible="{Binding HasSelection}">
-                        <StackPanel Spacing="12" DataContext="{Binding SelectedEntry}">
+                    <!-- Header band -->
+                    <Border Grid.Row="0" Background="{DynamicResource AppHeroBrush}" Padding="28,24,28,16">
+                        <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="780" HorizontalAlignment="Left">
+                            <Border Width="56" Height="56" CornerRadius="16" Background="{DynamicResource AppAvatarBrush}"
+                                    BoxShadow="0 4 14 0 #402E3FCF">
+                                <TextBlock Text="{Binding SelectedEntry.Initial}" FontSize="23" FontWeight="Bold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
 
-                            <TextBlock Text="Titulo" FontSize="12" Opacity="0.7" />
-                            <TextBox Text="{Binding Title}"
-                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
+                            <StackPanel Grid.Column="1" Margin="16,0,16,0" VerticalAlignment="Center" Spacing="5">
+                                <TextBlock Text="{Binding SelectedEntry.DisplayName}" Classes="title" TextTrimming="CharacterEllipsis" />
+                                <Border Classes="chip" HorizontalAlignment="Left"
+                                        IsVisible="{Binding SelectedEntry.Folder, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <PathIcon Data="{StaticResource IconFolder}" Width="11" Height="11"
+                                                  Foreground="{DynamicResource AppAccentTextBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SelectedEntry.Folder}" FontSize="11.5" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AppAccentTextBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
 
-                            <TextBlock Text="Carpeta (escribe una nueva o elige existente)" FontSize="12" Opacity="0.7" />
-                            <AutoCompleteBox Text="{Binding Folder, Mode=TwoWay}"
-                                             ItemsSource="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).FolderNames}"
-                                             FilterMode="Contains"
-                                             MinimumPrefixLength="0"
-                                             PlaceholderText="Sin carpeta"
-                                             HorizontalAlignment="Stretch"
-                                             IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
-
-                            <TextBlock Text="Usuario / correo" FontSize="12" Opacity="0.7" />
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Text="{Binding Username}"
-                                         IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
-                                <Button Grid.Column="1" Classes="icon" Margin="6,0,0,0"
-                                        ToolTip.Tip="Copiar usuario"
-                                        Command="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).CopyUsernameCommand}">
-                                    <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
-                                </Button>
-                            </Grid>
-
-                            <TextBlock Text="Contrasena" FontSize="12" Opacity="0.7" />
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
-                                  DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}">
-                                <Panel Grid.Column="0">
-                                    <TextBox Text="{Binding SelectedEntry.Password}" PasswordChar="●"
-                                             IsVisible="{Binding !IsPasswordVisible}" IsEnabled="{Binding IsEditing}" />
-                                    <TextBox Text="{Binding SelectedEntry.Password}"
-                                             IsVisible="{Binding IsPasswordVisible}" IsEnabled="{Binding IsEditing}" />
-                                </Panel>
-                                <Button Grid.Column="1" Classes="icon" Margin="6,0,0,0"
-                                        ToolTip.Tip="Mostrar / ocultar"
-                                        Command="{Binding TogglePasswordVisibilityCommand}">
-                                    <PathIcon Data="{StaticResource IconEye}" Width="15" Height="15" />
-                                </Button>
-                                <Button Grid.Column="2" Classes="icon" Margin="6,0,0,0"
-                                        ToolTip.Tip="Copiar contrasena"
-                                        Command="{Binding CopyPasswordCommand}">
-                                    <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
-                                </Button>
-                                <Button Grid.Column="3" Classes="icon" Margin="6,0,0,0"
-                                        ToolTip.Tip="Generar contrasena fuerte"
-                                        Command="{Binding GeneratePasswordCommand}"
-                                        IsEnabled="{Binding IsEditing}">
-                                    <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15"
-                                              Foreground="{StaticResource AppAccentHoverBrush}" />
-                                </Button>
-                            </Grid>
-
-                            <TextBlock Text="Sitio web / URL" FontSize="12" Opacity="0.7" />
-                            <TextBox Text="{Binding Url}"
-                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
-
-                            <TextBlock Text="Notas" FontSize="12" Opacity="0.7" />
-                            <TextBox Text="{Binding Notes}" AcceptsReturn="True"
-                                     Height="90" TextWrapping="Wrap"
-                                     IsEnabled="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext).IsEditing}" />
-
-                            <Grid ColumnDefinitions="*,Auto"
-                                  DataContext="{Binding $parent[UserControl].((vm:VaultViewModel)DataContext)}"
-                                  Margin="0,8,0,0">
-                                <Button Grid.Column="0"
-                                        Command="{Binding RequestDeleteCommand}"
-                                        HorizontalAlignment="Left">
-                                    <StackPanel Orientation="Horizontal" Spacing="7">
-                                        <PathIcon Data="{StaticResource IconTrash}" Width="15" Height="15" />
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Button Classes="dangersoft" Command="{Binding RequestDeleteCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon Data="{StaticResource IconTrash}" Width="14" Height="14" />
                                         <TextBlock Text="Eliminar" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Grid.Column="1"
-                                        Command="{Binding EditCommand}"
-                                        IsVisible="{Binding !IsEditing}"
-                                        Classes="accent" HorizontalContentAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Spacing="7">
-                                        <PathIcon Data="{StaticResource IconEdit}" Width="15" Height="15" />
+                                <Button Classes="accent" Command="{Binding EditCommand}" IsVisible="{Binding !IsEditing}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14" />
                                         <TextBlock Text="Editar" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Grid.Column="1"
-                                        Command="{Binding SaveEntryCommand}"
-                                        IsVisible="{Binding IsEditing}"
-                                        Classes="accent" HorizontalContentAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Spacing="7">
-                                        <PathIcon Data="{StaticResource IconSave}" Width="15" Height="15" />
-                                        <TextBlock Text="Guardar cambios" VerticalAlignment="Center" />
+                                <Button Classes="accent" Command="{Binding SaveEntryCommand}" IsVisible="{Binding IsEditing}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon Data="{StaticResource IconSave}" Width="14" Height="14" />
+                                        <TextBlock Text="Guardar" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                            </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Editing banner -->
+                    <Border Grid.Row="1" Margin="28,0,28,6" Padding="12,8" CornerRadius="10" MaxWidth="780"
+                            HorizontalAlignment="Left"
+                            Background="{DynamicResource AppAccentSubtleBrush}"
+                            BorderBrush="{DynamicResource AppAccentBorderBrush}" BorderThickness="1"
+                            IsVisible="{Binding IsEditing}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconEdit}" Width="13" Height="13"
+                                      Foreground="{DynamicResource AppAccentTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="Modo edicion: los cambios se guardan solos. Pulsa Guardar para terminar."
+                                       Foreground="{DynamicResource AppAccentTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Form -->
+                    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel MaxWidth="780" Margin="28,6,28,28" Spacing="16" HorizontalAlignment="Left"
+                                    Classes.viewing="{Binding IsReadOnlyMode}">
+
+                            <!-- Credentials -->
+                            <Border Classes="card" Background="{DynamicResource AppSurfaceAltBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="CREDENCIALES" Classes="section" Margin="18,14,18,10" />
+                                    <Border Classes="divider" />
+
+                                    <Grid ColumnDefinitions="120,*,Auto" Margin="18,0,12,0" MinHeight="50">
+                                        <TextBlock Text="Usuario" Classes="label" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedEntry.Username}"
+                                                 IsReadOnly="{Binding IsReadOnlyMode}" />
+                                        <Button Grid.Column="2" Classes="icon ghost" Margin="6,0,0,0" ToolTip.Tip="Copiar usuario"
+                                                VerticalAlignment="Center" Command="{Binding CopyUsernameCommand}">
+                                            <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
+                                        </Button>
+                                    </Grid>
+                                    <Border Classes="divider" Margin="18,0,0,0" />
+
+                                    <Grid ColumnDefinitions="120,*,Auto,Auto,Auto" Margin="18,0,12,0" MinHeight="50">
+                                        <TextBlock Text="Contrasena" Classes="label" VerticalAlignment="Center" />
+                                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBox Text="{Binding SelectedEntry.Password}" PasswordChar="●"
+                                                     IsVisible="{Binding !IsPasswordVisible}" IsReadOnly="{Binding IsReadOnlyMode}" />
+                                            <TextBox Text="{Binding SelectedEntry.Password}"
+                                                     IsVisible="{Binding IsPasswordVisible}" IsReadOnly="{Binding IsReadOnlyMode}" />
+                                        </Panel>
+                                        <Button Grid.Column="2" Classes="icon ghost" Margin="6,0,0,0" ToolTip.Tip="Mostrar / ocultar"
+                                                VerticalAlignment="Center" Command="{Binding TogglePasswordVisibilityCommand}">
+                                            <PathIcon Data="{StaticResource IconEye}" Width="15" Height="15" />
+                                        </Button>
+                                        <Button Grid.Column="3" Classes="icon ghost" Margin="2,0,0,0" ToolTip.Tip="Copiar contrasena"
+                                                VerticalAlignment="Center" Command="{Binding CopyPasswordCommand}">
+                                            <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15" />
+                                        </Button>
+                                        <Button Grid.Column="4" Classes="icon ghost" Margin="2,0,0,0"
+                                                ToolTip.Tip="Generar contrasena segura (solo en edicion)"
+                                                VerticalAlignment="Center" Command="{Binding GeneratePasswordCommand}"
+                                                IsEnabled="{Binding IsEditing}">
+                                            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15"
+                                                      Foreground="{DynamicResource AppAccentTextBrush}" />
+                                        </Button>
+                                    </Grid>
+                                    <Border Classes="divider" Margin="18,0,0,0" />
+
+                                    <Grid ColumnDefinitions="120,*" Margin="18,0,12,0" MinHeight="50">
+                                        <TextBlock Text="Sitio web" Classes="label" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedEntry.Url}"
+                                                 IsReadOnly="{Binding IsReadOnlyMode}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Organization -->
+                            <Border Classes="card" Background="{DynamicResource AppSurfaceAltBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="ORGANIZACION" Classes="section" Margin="18,14,18,10" />
+                                    <Border Classes="divider" />
+
+                                    <Grid ColumnDefinitions="120,*" Margin="18,0,12,0" MinHeight="50">
+                                        <TextBlock Text="Titulo" Classes="label" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedEntry.Title}"
+                                                 IsReadOnly="{Binding IsReadOnlyMode}" />
+                                    </Grid>
+                                    <Border Classes="divider" Margin="18,0,0,0" />
+
+                                    <Grid ColumnDefinitions="120,*" Margin="18,0,12,0" MinHeight="50">
+                                        <TextBlock Text="Carpeta" Classes="label" VerticalAlignment="Center" />
+                                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                                            <AutoCompleteBox Text="{Binding SelectedEntry.Folder, Mode=TwoWay}"
+                                                             ItemsSource="{Binding FolderNames}"
+                                                             FilterMode="Contains" MinimumPrefixLength="0"
+                                                             PlaceholderText="Escribe una nueva o elige una existente"
+                                                             HorizontalAlignment="Stretch"
+                                                             IsVisible="{Binding IsEditing}" />
+                                            <TextBox Text="{Binding SelectedEntry.Folder}" IsReadOnly="True"
+                                                     PlaceholderText="Sin carpeta" IsVisible="{Binding IsReadOnlyMode}" />
+                                        </Panel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Notes -->
+                            <Border Classes="card" Background="{DynamicResource AppSurfaceAltBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="NOTAS" Classes="section" Margin="18,14,18,10" />
+                                    <Border Classes="divider" />
+                                    <TextBox Margin="12,8,12,10" Text="{Binding SelectedEntry.Notes}" AcceptsReturn="True"
+                                             TextWrapping="Wrap" MinHeight="96" IsReadOnly="{Binding IsReadOnlyMode}" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
+                </Grid>
+                    <Button Classes="icon ghost" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,6,0"
+                            ToolTip.Tip="Cerrar panel" Command="{Binding CloseDetailCommand}">
+                        <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
+                    </Button>
                 </Panel>
             </Border>
         </Grid>
 
-        <!-- Status bar -->
-        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}"
-                   Foreground="#43A047" Margin="2,8,0,0" MinHeight="18"
-                   IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <!-- Status toast -->
+        <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="22" Padding="14,9" CornerRadius="10"
+                Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderStrongBrush}"
+                BorderThickness="1" BoxShadow="0 6 20 0 #33000000" IsHitTestVisible="False"
+                IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconCheck}" Width="14" Height="14"
+                          Foreground="{DynamicResource AppSuccessBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
 
         <!-- Two-step delete confirmation overlay -->
-        <Border Grid.RowSpan="3" Margin="-12" Background="#B3000000"
-                IsVisible="{Binding IsDeleteConfirmActive}">
-            <Border Background="{StaticResource AppSurfaceBrush}"
-                    BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
-                    CornerRadius="16" Padding="28" Width="440"
+        <Border Background="#B3000000" IsVisible="{Binding IsDeleteConfirmActive}">
+            <Border Background="{DynamicResource AppSurfaceBrush}"
+                    BorderBrush="{DynamicResource AppBorderStrongBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="26" Width="400" BoxShadow="0 12 40 0 #66000000"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Panel>
-                <!-- Step 1: first confirmation -->
-                <StackPanel Spacing="16" IsVisible="{Binding DeleteStep1Visible}">
-                    <Border Background="#33E5484D" CornerRadius="16" Width="60" Height="60"
-                            HorizontalAlignment="Center">
-                        <PathIcon Data="{StaticResource IconTrash}" Width="28" Height="28" Foreground="#E5484D" />
-                    </Border>
-                    <TextBlock Text="Eliminar entrada" FontSize="19" FontWeight="Bold"
-                               HorizontalAlignment="Center" />
-                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Opacity="0.85"
-                               Text="{Binding DeleteTargetName, StringFormat='Estas a punto de eliminar &quot;{0}&quot;. Se pediran dos confirmaciones porque no se puede deshacer.'}" />
-                    <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
-                        <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                Command="{Binding CancelDeleteCommand}" />
-                        <Button Grid.Column="1" Content="Continuar" Margin="6,0,0,0"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                Classes="danger" Command="{Binding ConfirmDeleteStep1Command}" />
-                    </Grid>
-                </StackPanel>
+                <Panel>
+                    <!-- Step 1 -->
+                    <StackPanel Spacing="14" IsVisible="{Binding DeleteStep1Visible}">
+                        <Border Background="{DynamicResource AppDangerSubtleBrush}" CornerRadius="16" Width="54" Height="54"
+                                HorizontalAlignment="Center">
+                            <PathIcon Data="{StaticResource IconTrash}" Width="24" Height="24"
+                                      Foreground="{DynamicResource AppDangerBrush}" />
+                        </Border>
+                        <TextBlock Text="Eliminar entrada" Classes="heading" HorizontalAlignment="Center" />
+                        <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                   Text="{Binding DeleteTargetName, StringFormat='Estas a punto de eliminar &quot;{0}&quot;. Se pediran dos confirmaciones porque no se puede deshacer.'}" />
+                        <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+                            <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding CancelDeleteCommand}" />
+                            <Button Grid.Column="1" Content="Continuar" Margin="6,0,0,0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Classes="danger" Command="{Binding ConfirmDeleteStep1Command}" />
+                        </Grid>
+                    </StackPanel>
 
-                <!-- Step 2: final re-confirmation -->
-                <StackPanel Spacing="16" IsVisible="{Binding DeleteStep2Visible}">
-                    <Border Background="#33E5484D" CornerRadius="16" Width="60" Height="60"
-                            HorizontalAlignment="Center">
-                        <PathIcon Data="{StaticResource IconTrash}" Width="28" Height="28" Foreground="#E5484D" />
-                    </Border>
-                    <TextBlock Text="Confirmacion final" FontSize="19" FontWeight="Bold"
-                               HorizontalAlignment="Center" Foreground="#E5484D" />
-                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Opacity="0.85"
-                               Text="{Binding DeleteTargetName, StringFormat='Esta accion es PERMANENTE y no se puede deshacer. Eliminar definitivamente &quot;{0}&quot;?'}" />
-                    <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
-                        <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                Command="{Binding CancelDeleteCommand}" />
-                        <Button Grid.Column="1" Content="Eliminar definitivamente" Margin="6,0,0,0"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                Classes="danger" Command="{Binding ConfirmDeleteStep2Command}" />
-                    </Grid>
-                </StackPanel>
-              </Panel>
+                    <!-- Step 2 -->
+                    <StackPanel Spacing="14" IsVisible="{Binding DeleteStep2Visible}">
+                        <Border Background="{DynamicResource AppDangerSubtleBrush}" CornerRadius="16" Width="54" Height="54"
+                                HorizontalAlignment="Center">
+                            <PathIcon Data="{StaticResource IconTrash}" Width="24" Height="24"
+                                      Foreground="{DynamicResource AppDangerBrush}" />
+                        </Border>
+                        <TextBlock Text="Confirmacion final" Classes="heading" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource AppDangerBrush}" />
+                        <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                   Text="{Binding DeleteTargetName, StringFormat='Esta accion es PERMANENTE y no se puede deshacer. Eliminar definitivamente &quot;{0}&quot;?'}" />
+                        <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+                            <Button Grid.Column="0" Content="Cancelar" Margin="0,0,6,0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding CancelDeleteCommand}" />
+                            <Button Grid.Column="1" Content="Eliminar definitivamente" Margin="6,0,0,0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Classes="danger" Command="{Binding ConfirmDeleteStep2Command}" />
+                        </Grid>
+                    </StackPanel>
+                </Panel>
             </Border>
         </Border>
     </Grid>
